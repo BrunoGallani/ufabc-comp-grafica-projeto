@@ -1,5 +1,17 @@
 # IDE files
+.idea/
 .vscode/
+
+# AI files
+.claude/
+CLAUDE.md
+
+# Project generated files
+capturas/
+
+# Project reference files
+materiais-projeto-consulta/
+docs/GUIA.md
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -1,0 +1,7 @@
+# Mesmas bibliotecas do ambiente do curso (slides04, p.15).
+# Instalar com: pip install -r requirements.txt
+glfw
+moderngl
+numpy
+pyglm
+pillow
