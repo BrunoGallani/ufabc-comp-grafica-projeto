@@ -1,16 +1,15 @@
 """
-Sra. Coração: um exemplo de HERANÇA.
+Sra. Coração: um exemplo de herança.
 
-SraCoracao "é um" SenhorCoracao: herda a geometria, os olhos, o desenho e o
-andar(). Só duas coisas mudam:
+A :class:`SraCoracao` "é um" :class:`SenhorCoracao`: herda a geometria, os olhos,
+o desenho e o `andar()`. Só duas coisas mudam:
 
-1. a cor do corpo (o atributo de classe COR_CORPO é sobrescrito);
-2. o olhar: em vez de obedecer às setas, ela sempre olha para o Sr. Coração.
-   Para isso ela guarda uma referência a ele (self.alvo) e, a cada quadro,
-   calcula a direção até ele. É assim que dois objetos "conversam": um lê
-   o atributo do outro (alvo.posicao).
+- **Cor do corpo:** o atributo de classe `COR_CORPO` é sobrescrito;
+- **Olhar:** em vez de obedecer às setas, ela sempre olha para o Sr. Coração.
+  Para isso, guarda uma referência a ele (o alvo) e, a cada quadro, calcula a
+  direção até ele.
 
-Nada no senhor_coracao.py precisou mudar para esta classe existir.
+Nada no `senhor_coracao.py` precisou mudar para esta classe existir.
 """
 from objetos.senhor_coracao import LIMITE_OLHAR, SenhorCoracao
 
@@ -18,6 +17,9 @@ VERMELHO = (0.90, 0.15, 0.25, 1.0)
 
 
 class SraCoracao(SenhorCoracao):
+    """
+    A Sra. Coração, que acompanha com o olhar o objeto `alvo`.
+    """
     COR_CORPO = VERMELHO   # sobrescreve a cor herdada (MAGENTA)
 
     def __init__(self, r, alvo, posicao=(0.0, 0.0), tamanho=1.0):
@@ -25,7 +27,9 @@ class SraCoracao(SenhorCoracao):
         self.alvo = alvo                        # o objeto para o qual ela olha
 
     def atualizar(self, dt, estado):
-        """Aponta as pupilas para o centro do alvo, até onde o olho permite."""
+        """
+        Aponta as pupilas para o centro do alvo, até onde o olho permite.
+        """
         dx = self.alvo.posicao[0] - self.posicao[0]
         dy = self.alvo.posicao[1] - self.posicao[1]
         distancia = (dx ** 2 + dy ** 2) ** 0.5

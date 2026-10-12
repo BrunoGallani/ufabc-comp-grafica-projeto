@@ -1,6 +1,8 @@
 """
-Árvore: tronco (retângulo, TRIANGLES + EBO) e copa (três círculos sobrepostos,
-o círculo compartilhado em TRIANGLE_FAN).
+Árvore da cena, formada por duas partes:
+
+- **Tronco:** retângulo desenhado com `TRIANGLES` + EBO;
+- **Copa:** três círculos sobrepostos (a malha compartilhada, em `TRIANGLE_FAN`).
 
 Tecla A: troca a estação do ano, ou seja, a cor da copa.
 """
@@ -26,6 +28,10 @@ COPA = [(-0.07, 0.00, 0.12), (0.07, 0.00, 0.12), (0.00, 0.10, 0.13)]
 
 
 class Arvore(ObjetoCena):
+    """
+    Árvore apoiada no chão, na posição horizontal `x`.
+    """
+
     def __init__(self, r, x=0.78):
         self.x = x
         self.indice_estacao = 0
@@ -33,12 +39,17 @@ class Arvore(ObjetoCena):
         v, i = retangulo(LARGURA_TRONCO, ALTURA_TRONCO)
         self.tronco = r.criar_malha(v, moderngl.TRIANGLES, indices=i)
 
-    def proxima_estacao(self):
-        """Tecla A: avança para a próxima estação e devolve o nome dela."""
+    def proxima_estacao(self) -> str:
+        """
+        Avança para a próxima estação (tecla A) e retorna o nome dela.
+        """
         self.indice_estacao = (self.indice_estacao + 1) % len(ESTACOES)
         return ESTACOES[self.indice_estacao][0]
 
     def desenhar(self, r, estado):
+        """
+        Desenha o tronco e, por cima, os círculos da copa.
+        """
         r.desenhar(self.tronco, 1.0, (self.x, Y_CHAO + ALTURA_TRONCO / 2), COR_TRONCO)
 
         topo = Y_CHAO + ALTURA_TRONCO

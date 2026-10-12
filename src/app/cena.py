@@ -1,173 +1,192 @@
 """
-A Cena: o "maestro" do programa.
+Módulo orquestrador do programa. Possui as seguintes classes:
 
-- Cria o Renderizador e todos os objetos (casa, árvore, Sr. Coração...).
-- Guarda o estado GLOBAL (EstadoCena): é dia ou noite? está chovendo?
-- Recebe as teclas (callback do GLFW) e repassa a quem interessa.
-- A cada quadro, atualiza todos os objetos e depois desenha todos, do fundo
-  para a frente (algoritmo do pintor, slides04, p.134).
-
-Como as classes se comunicam:
-
-    main.py  --cria-->  Cena  --chama atualizar()/desenhar()-->  cada ObjetoCena
-                          |                                          |
-                          +--possui--> EstadoCena <--só lê-----------+
-                          |                                          |
-                          +--possui--> Renderizador <--pede desenhos-+
-                                           |
-                                           +--uniforms e draw calls--> GPU (shaders)
+- :class:`EstadoCena`
+- :class:`Cena`
 """
+
 import glfw
+import moderngl
 
 from config import (ATENUACAO_CHUVA, ATENUACAO_NOITE, CEU_DIA, CEU_DIA_CHUVA,
-                    CEU_NOITE, CEU_NOITE_CHUVA, PASTA_CAPTURAS, Y_CHAO)
-from objetos.arvore import Arvore
+                    CEU_NOITE, CEU_NOITE_CHUVA, Y_CHAO)
+from objetos.arvore import ESTACOES, Arvore
 from objetos.astros import Estrelas, Lua, Sol
-from objetos.casa import Casa
+from objetos.casa import PALETA_PAREDE, Casa
 from objetos.chao import Chao
 from objetos.chuva import Chuva
 from objetos.nuvem import Nuvem
 from objetos.senhor_coracao import SenhorCoracao
 from objetos.sra_coracao import SraCoracao
 from renderizador import Renderizador
-from utils.date_utils import get_date_prefix
 from utils.screenshot_utils import save_screenshot
-
-SETAS = (glfw.KEY_LEFT, glfw.KEY_RIGHT, glfw.KEY_UP, glfw.KEY_DOWN)
-
-AJUDA_TECLAS = """Teclas:
-  Setas ............ o Sr. Coração olha (como no exemplo do professor)
-  Shift + setas .... o Sr. Coração anda
-  D ................ dia / noite
-  R ................ liga / desliga a chuva
-  C ................ troca a cor da casa
-  A ................ troca a estação (cor) da árvore
-  P ................ salva uma captura de tela em capturas/
-  ESC .............. sai"""
-
+from utils.keyboard_utils import AJUDA_TECLAS, Key
+from utils.log_utils import log_hardware_properties, Log
 
 class EstadoCena:
-    """O estado GLOBAL da cena: a Cena altera, os objetos só leem."""
+    """
+    Estado da cena: a cena altera, os objetos só leem.
 
-    def __init__(self):
+    Possui os seguintes atributos:
+
+    - **Noite:** define se está dia ou noite (controle pela tecla D);
+    - **Chovendo:** define se está chovendo ou não (controle pela tecla R);
+    - **Tempo:** representa os segundos transcorridos desde o início (é usado em animações);
+    - **Cor do céu:** define a cor do céu.
+    """
+
+    def __init__(self) -> None:
         self.noite = False
         self.chovendo = False
-        self.tempo = 0.0           # segundos desde o início (para as animações)
-        self.cor_do_ceu = CEU_DIA  # a Lua precisa dela para fazer o crescente
-
+        self.tempo = 0.0
+        self.cor_do_ceu = CEU_DIA
 
 class Cena:
-    def __init__(self, ctx):
-        self.ctx = ctx
-        self.r = Renderizador(ctx)
-        self.estado = EstadoCena()
-        self.pedir_captura = False   # a tecla P liga; desenhar() salva e desliga
+    """
+    Cria os objetos da cena, trata o teclado e desenha cada quadro.
 
-        # Objetos que recebem comandos do teclado ficam guardados em atributos.
-        # Tamanho 0.40: o Sr. Coração do tamanho do esboço, apoiado na grama. A
-        # metade da altura dele na tela é 0.53 * tamanho; afundamos 0.02 na grama.
-        self.sr_coracao = SenhorCoracao(self.r, posicao=(-0.06, Y_CHAO + 0.19), tamanho=0.40)
-        self.sra_coracao = SraCoracao(self.r, alvo=self.sr_coracao,
+    Possui os seguintes atributos:
+
+    - **Contexto:** o contexto `moderngl` da janela;
+    - **Renderizador:** o :class:`Renderizador`, único ponto de contato com a GPU;
+    - **Estado:** o :class:`EstadoCena`, alterado pelas teclas e lido pelos objetos;
+    - **Pedido de captura:** quando verdadeiro, o próximo quadro é salvo em PNG (tecla P);
+    - **Objetos:** os objetos da cena, na ordem em que são desenhados.
+
+    O Sr. Coração, a casa e a árvore também ficam em atributos próprios, pois
+    recebem comandos do teclado.
+    """
+
+    __slots__ = ("ctx", "render", "estado",
+                 "pedir_captura", "sr_coracao", "sra_coracao",
+                 "casa", "arvore", "objetos")
+
+    def __init__(self, ctx: moderngl.Context) -> None:
+        self.ctx = ctx
+        self.render = Renderizador(ctx)
+        self.estado = EstadoCena()
+        self.pedir_captura = False
+
+        self.sr_coracao = SenhorCoracao(self.render, posicao=(-0.06, Y_CHAO + 0.19), tamanho=0.40)
+        self.sra_coracao = SraCoracao(self.render, alvo=self.sr_coracao,
                                       posicao=(0.38, Y_CHAO + 0.16), tamanho=0.34)
-        self.casa = Casa(self.r)
-        self.arvore = Arvore(self.r)
+        self.casa = Casa(self.render)
+        self.arvore = Arvore(self.render)
 
         # A ORDEM desta lista é a ordem de desenho: do fundo para a frente.
         # Quem é desenhado depois fica POR CIMA (não há teste de profundidade).
         self.objetos = [
-            Estrelas(self.r),
-            Sol(self.r),
-            Lua(self.r),
-            Nuvem(self.r, x=-0.55, y=0.74, tamanho=1.0, velocidade=0.05),
-            Nuvem(self.r, x=0.15, y=0.46, tamanho=0.75, velocidade=0.08),
-            Chao(self.r),
+            Estrelas(self.render),
+            Sol(self.render),
+            Lua(self.render),
+            Nuvem(self.render, x=-0.55, y=0.74, tamanho=1.0, velocidade=0.05),
+            Nuvem(self.render, x=0.15, y=0.46, tamanho=0.75, velocidade=0.08),
+            Chao(self.render),
             self.arvore,
             self.casa,
             self.sra_coracao,
             self.sr_coracao,
-            Chuva(self.r),   # por último: a chuva cai na frente de tudo
+            Chuva(self.render),   # por último: a chuva cai na frente de tudo
         ]
 
     # ------------------------------------------------------------------ teclado
-    def tecla(self, window, key, scancode, action, mods):
-        """Callback de teclado: o GLFW a chama uma vez por evento (slides04, p.81).
-        É registrada em main.py com glfw.set_key_callback(window, cena.tecla)."""
-        if action != glfw.PRESS and action != glfw.REPEAT:
-            return   # ignora o soltar da tecla (RELEASE)
+    def tecla(self, window: 'glfw._GLFWwindowPointerT', key: int, scancode: int,
+              action: int, mods: int) -> None:
+        """
+        Callback de teclado: o GLFW a chama uma vez por evento.
 
-        if key == glfw.KEY_ESCAPE:
+        É registrada em `main.py` com `glfw.set_key_callback(window, cena.tecla)`.
+        As setas aceitam `PRESS` e `REPEAT` (segurar a tecla gera movimento contínuo);
+        as demais teclas são do tipo liga/desliga e só reagem a `PRESS`.
+        """
+        if action == glfw.RELEASE:
+            return
+
+        if key == Key.ESC:
             glfw.set_window_should_close(window, True)
             return
 
-        # Setas aceitam PRESS e REPEAT: segurar a tecla = movimento contínuo,
-        # exatamente como no 06_senhor_coracao.py.
-        if key in SETAS:
-            if mods & glfw.MOD_SHIFT:          # Shift apertado junto?
+        if key in Key.setas():
+            if mods & glfw.MOD_SHIFT:     # Shift apertado junto
                 self.sr_coracao.andar(key)
             else:
                 self.sr_coracao.olhar(key)
             return
 
-        # As demais teclas são "liga/desliga": só reagem ao toque (PRESS).
         # Com REPEAT, segurar a tecla ficaria alternando sem parar.
-        if action != glfw.PRESS:
+        if action == glfw.REPEAT:
             return
-        if key == glfw.KEY_D:
+
+        if key == Key.K:
+            Log.d(AJUDA_TECLAS)
+
+        elif key == Key.H:
+            Log.d(f"Propriedades do driver/hardware:\n{log_hardware_properties(self.ctx)}")
+
+        elif key == Key.D:
             self.estado.noite = not self.estado.noite
-            self.registrar("Modo noite" if self.estado.noite else "Modo dia")
-        elif key == glfw.KEY_R:
+            Log.d("Modo noite" if self.estado.noite else "Modo dia")
+
+        elif key == Key.R:
             self.estado.chovendo = not self.estado.chovendo
-            self.registrar("Chuva ligada" if self.estado.chovendo else "Chuva desligada")
-        elif key == glfw.KEY_C:
-            self.casa.proxima_cor()
-            self.registrar("Nova cor da casa")
-        elif key == glfw.KEY_A:
-            self.registrar(f"Árvore: {self.arvore.proxima_estacao()}")
-        elif key == glfw.KEY_P:
-            self.pedir_captura = True   # salva no fim do próximo desenhar()
+            Log.d("Chuva ligada" if self.estado.chovendo else "Chuva desligada")
+
+        elif key == Key.C:
+            Log.d(f"Casa: cor '{self.casa.proxima_cor()}' {PALETA_PAREDE[self.casa.indice_cor][1]}")
+
+        elif key == Key.A:
+            Log.d(f"Árvore: estação '{self.arvore.proxima_estacao()}' {ESTACOES[self.arvore.indice_estacao][1]}")
+
+        elif key == Key.P:
+            self.pedir_captura = True
 
     # ----------------------------------------------------------- estado global
-    def cor_do_ceu(self):
-        """A cor do fundo (ctx.clear) depende dos dois estados globais."""
+    def cor_do_ceu(self) -> tuple[float, float, float, float]:
+        """
+        Retorna a cor do fundo (usada no `ctx.clear`), que depende de ser dia ou
+        noite e de estar chovendo ou não.
+        """
         if self.estado.noite:
             return CEU_NOITE_CHUVA if self.estado.chovendo else CEU_NOITE
         return CEU_DIA_CHUVA if self.estado.chovendo else CEU_DIA
 
-    def atenuacao(self):
-        """O fator enviado ao shader pelo uniform u_atenuacao."""
+    def atenuacao(self) -> float:
+        """
+        Retorna o fator enviado ao fragment shader pelo uniform `u_atenuacao`.
+
+        A noite e a chuva escurecem a cena; os dois fatores se multiplicam.
+        """
         fator = ATENUACAO_NOITE if self.estado.noite else 1.0
         if self.estado.chovendo:
             fator *= ATENUACAO_CHUVA
         return fator
 
     # -------------------------------------------------------------- cada quadro
-    def atualizar(self, dt):
-        """Avança o tempo e deixa cada objeto se atualizar (animações)."""
+    def atualizar(self, dt: float) -> None:
+        """
+        Avança o tempo em `dt` segundos e atualiza cada objeto (animações).
+        """
         self.estado.tempo += dt
         for objeto in self.objetos:
             objeto.atualizar(dt, self.estado)
 
-    def desenhar(self):
-        """Desenha o quadro inteiro no backbuffer, do fundo para a frente."""
+    def desenhar(self) -> None:
+        """
+        Desenha o quadro inteiro no *backbuffer*, do fundo para a frente.
+
+        Se uma captura foi pedida (tecla P), ela é salva ao final, com o quadro completo.
+        """
         self.estado.cor_do_ceu = self.cor_do_ceu()
-        self.r.comecar_quadro(self.estado.cor_do_ceu, self.atenuacao())
+        self.render.comecar_quadro(self.estado.cor_do_ceu, self.atenuacao())
         for objeto in self.objetos:
-            objeto.desenhar(self.r, self.estado)
+            objeto.desenhar(self.render, self.estado)
 
-        if self.pedir_captura:   # o quadro está completo: hora de fotografar
+        if self.pedir_captura:
             self.pedir_captura = False
-            self.salvar_captura()
+            save_screenshot(self)
 
-    # -------------------------------------------------------------- utilidades
-    def salvar_captura(self):
-        nome = ("noite" if self.estado.noite else "dia") + ("_chuva" if self.estado.chovendo else "")
-        caminho = save_screenshot(self.ctx, PASTA_CAPTURAS, nome)
-        self.registrar(f"Captura salva em {caminho}")
-
-    def registrar(self, mensagem):
-        """Mostra no terminal o que aconteceu, com data e hora (utils do projeto)."""
-        print(f"{get_date_prefix()} {mensagem}")
-
-    def liberar(self):
-        """Libera da VRAM tudo o que a cena criou."""
-        self.r.liberar()
+    def liberar(self) -> None:
+        """
+        Libera da VRAM tudo o que a cena criou.
+        """
+        self.render.liberar()
