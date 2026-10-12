@@ -1,6 +1,6 @@
 # Cena 2D: Sr. Coração e seus amigos
 
-Trabalho prático de Computação Gráfica (MCCC007-23, UFABC): uma cena 2D interativa em Python, com OpenGL 4.0 Core (`glfw`, `moderngl` e `numpy`). Ela foi construída expandindo o exemplo do **Sr. Coração** visto em aula.
+Trabalho prático de Computação Gráfica (MCCC007-23, UFABC): uma cena 2D interativa em Python, com OpenGL 4.0 Core (`glfw`, `moderngl` e `numpy`). Ela expande o exemplo do **Sr. Coração**.
 
 A cena tem:
 
@@ -26,12 +26,23 @@ python src/app/main.py
 | --- | --- |
 | Setas | o Sr. Coração move o olhar |
 | Shift + setas | o Sr. Coração anda |
+| K | exibe no terminal o tutorial com as teclas de controle |
+| H | exibe no terminal as informações do driver e da placa de vídeo |
 | D | dia / noite (cor de fundo e atenuação via uniform) |
 | R | liga / desliga a chuva |
 | C | troca a cor da casa |
 | A | troca a estação (cor) da árvore |
 | P | salva uma captura de tela em `capturas/` |
-| ESC | sai |
+| ESC | encerra o programa |
+
+## Logs
+
+O programa registra no terminal, com data e hora, o que acontece durante a execução:
+
+- início e encerramento;
+- cada mudança de estado (dia/noite, chuva, cor da casa, estação da árvore);
+- capturas de tela salvas;
+- erros, em `stderr`.
 
 ## Estrutura
 
@@ -43,6 +54,6 @@ src/app/
 ├── geometria.py       funções numpy que geram os vértices de cada forma
 ├── config.py          constantes globais (janela, chão, cores do céu, atenuação)
 ├── objetos/           uma classe por elemento da cena (herdam de ObjetoCena)
-├── shaders/           senhor_coracao.vert e senhor_coracao.frag
-└── utils/             funções auxiliares (data, título, hardware, capturas)
+├── shaders/           main_vertex_shader.vert e main_frag_shader.frag
+└── utils/             funções auxiliares (logs, teclado, data, título, shaders, capturas)
 ```

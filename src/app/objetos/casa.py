@@ -1,17 +1,16 @@
 """
 Casa: várias peças simples, cada uma desenhada com a primitiva que mais combina.
 
-Peças e primitivas usadas:
-- paredes, porta e janelas: retângulos com EBO, desenhados com TRIANGLES;
-- telhado: UMA malha de triângulo desenhada DUAS vezes, primeiro com TRIANGLES
-  (preenchido) e depois com LINE_LOOP (só o contorno). Mesmo VBO, mesmo VAO,
+- **Paredes, porta e janelas:** retângulos com EBO, desenhados com `TRIANGLES`;
+- **Telhado:** uma malha de triângulo desenhada duas vezes, primeiro com `TRIANGLES`
+  (preenchido) e depois com `LINE_LOOP` (só o contorno). Mesmo VBO, mesmo VAO,
   primitivas diferentes;
-- arco da porta e maçaneta: o círculo compartilhado (TRIANGLE_FAN);
-- caixilho das janelas: uma cruz em LINES, a mesma malha nas duas janelas.
+- **Arco da porta e maçaneta:** o círculo compartilhado (`TRIANGLE_FAN`);
+- **Caixilho das janelas:** uma cruz em `LINES`, a mesma malha nas duas janelas.
 
-Tecla C: troca a cor das paredes (percorre a PALETA_PAREDE).
+Tecla C: troca a cor das paredes (percorre a `PALETA_PAREDE`).
 À noite as janelas "acendem": são desenhadas como emissivas, ou seja, não
-sofrem a atenuação da noite (veja Renderizador.desenhar_emissivo).
+sofrem a atenuação da noite (veja :meth:`Renderizador.desenhar_emissivo`).
 """
 import moderngl
 
@@ -19,12 +18,13 @@ from config import Y_CHAO
 from geometria import cruz, retangulo, triangulo
 from objetos.objeto_cena import ObjetoCena
 
+# (nome, cor) de cada parede, na ordem em que a tecla C as percorre.
 PALETA_PAREDE = [
-    (0.93, 0.87, 0.70, 1.0),   # creme
-    (0.55, 0.75, 0.95, 1.0),   # azul-claro
-    (0.62, 0.85, 0.66, 1.0),   # verde-menta
-    (0.96, 0.66, 0.56, 1.0),   # salmão
-    (0.78, 0.68, 0.92, 1.0),   # lilás
+    ("creme", (0.93, 0.87, 0.70, 1.0)),
+    ("azul-claro", (0.55, 0.75, 0.95, 1.0)),
+    ("verde-menta", (0.62, 0.85, 0.66, 1.0)),
+    ("salmão", (0.96, 0.66, 0.56, 1.0)),
+    ("lilás", (0.78, 0.68, 0.92, 1.0)),
 ]
 COR_TELHADO = (0.80, 0.22, 0.18, 1.0)
 COR_CONTORNO_TELHADO = (0.22, 0.04, 0.03, 1.0)
@@ -34,7 +34,7 @@ COR_VIDRO_DIA = (0.72, 0.87, 0.97, 1.0)    # vidro refletindo o céu
 COR_VIDRO_NOITE = (1.00, 0.88, 0.45, 1.0)  # luz acesa lá dentro
 COR_CAIXILHO = (0.30, 0.18, 0.10, 1.0)
 
-# Medidas em NDC (lembre: a janela inteira tem 2 unidades de largura).
+# Medidas em NDC (a janela inteira tem 2 unidades de largura).
 LARGURA_PAREDE, ALTURA_PAREDE = 0.50, 0.40
 BASE_TELHADO, ALTURA_TELHADO = 0.62, 0.28
 LARGURA_PORTA, ALTURA_PORTA = 0.12, 0.18
@@ -44,6 +44,10 @@ ALTURA_JANELA = 0.27        # altura do centro das janelas acima do chão
 
 
 class Casa(ObjetoCena):
+    """
+    Casa apoiada no chão, centrada na posição horizontal `centro_x`.
+    """
+
     def __init__(self, r, centro_x=-0.58):
         self.x = centro_x
         self.indice_cor = 0          # posição atual na PALETA_PAREDE
@@ -61,17 +65,24 @@ class Casa(ObjetoCena):
                                      moderngl.TRIANGLES)
         self.caixilho = r.criar_malha(cruz(), moderngl.LINES)            # usada 2x
 
-    def proxima_cor(self):
-        """Tecla C: avança para a próxima cor da paleta (e volta ao início)."""
+    def proxima_cor(self) -> str:
+        """
+        Avança para a próxima cor da paleta (tecla C), voltando ao início no fim,
+        e retorna o nome dela.
+        """
         self.indice_cor = (self.indice_cor + 1) % len(PALETA_PAREDE)
+        return PALETA_PAREDE[self.indice_cor][0]
 
     def desenhar(self, r, estado):
+        """
+        Desenha paredes, telhado, porta e janelas, do fundo para a frente.
+        """
         x = self.x
 
         # Paredes. O retângulo nasce centrado na origem; para "apoiá-lo" no chão,
         # o centro fica meia altura acima de Y_CHAO.
         r.desenhar(self.parede, 1.0, (x, Y_CHAO + ALTURA_PAREDE / 2),
-                   PALETA_PAREDE[self.indice_cor])
+                   PALETA_PAREDE[self.indice_cor][1])
 
         # Telhado: a mesma malha, duas primitivas.
         centro_telhado = (x, Y_CHAO + ALTURA_PAREDE + ALTURA_TELHADO / 2)
