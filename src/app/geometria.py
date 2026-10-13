@@ -1,8 +1,8 @@
 """
 Geometrias da cena: o "lado da CPU".
 
-Cada função retorna um arranjo numpy de vértices (e, no caso do retângulo,
-também os índices do EBO). Nenhuma delas interage com a GPU: quem copia os dados
+Cada função retorna um arranjo numpy de vértices (e, no caso do retângulo e do
+laço, também os índices do EBO). Nenhuma delas interage com a GPU: quem copia os dados
 para a VRAM é o :class:`Renderizador`.
 
 Todos os vértices têm o formato `(x, y, z, w)`, em float de 32 bits (`'f4'`):
@@ -72,6 +72,19 @@ def curva_elipse(raio_x, raio_y, n=32):
     return leque(raio_x * np.cos(t), raio_y * np.sin(t))
 
 
+def curva_flor(petalas=5, n=80):
+    """
+    Flor com `petalas` pétalas, para `TRIANGLE_FAN`, cabendo num círculo de raio 1.
+
+    É uma curva polar: o raio muda com o ângulo, `r = 0.4 + 0.6 * |cos(petalas * t / 2)|`.
+    Cada "lombada" do cosseno vira uma pétala (raio 1 na ponta, 0.4 entre duas
+    pétalas). Como o centro enxerga toda a borda, o `TRIANGLE_FAN` a preenche.
+    """
+    t = np.linspace(0.0, 2.0 * np.pi, n, endpoint=False)
+    raio = 0.4 + 0.6 * np.abs(np.cos(petalas * t / 2.0))
+    return leque(raio * np.cos(t), raio * np.sin(t))
+
+
 def retangulo(largura, altura):
     """
     Retângulo para `TRIANGLES` com EBO.
@@ -134,6 +147,28 @@ def raios_do_sol(n=12, raio_interno=1.08, raio_externo=1.55, meia_abertura=0.12)
     return np.array(vertices, dtype='f4')
 
 
+def galhos(ramos):
+    """
+    Galhos secos para `TRIANGLES`: cada ramo é um triângulo fino e comprido,
+    largo na base e pontudo na ponta. Todos ficam num único VBO, como em
+    :func:`raios_do_sol`, e uma única chamada desenha a galhada inteira.
+
+    `ramos` é uma lista de `(base, ponta, meia_largura)`: os pontos `(x, y)` da
+    base e da ponta do ramo, e a metade da largura dele na base.
+    """
+    vertices = []
+    for (bx, by), (px, py), meia in ramos:
+        # Vetor perpendicular ao ramo, com comprimento `meia`: afasta os dois
+        # vértices da base para os lados.
+        dx, dy = px - bx, py - by
+        comprimento = np.hypot(dx, dy)
+        nx, ny = -dy / comprimento * meia, dx / comprimento * meia
+        vertices += [[bx + nx, by + ny, 0.0, 1.0],   # base, um lado
+                     [bx - nx, by - ny, 0.0, 1.0],   # base, outro lado
+                     [px, py, 0.0, 1.0]]             # ponta
+    return np.array(vertices, dtype='f4')
+
+
 def cruz():
     """
     Dois segmentos, um horizontal e um vertical: o caixilho da janela.
@@ -145,3 +180,35 @@ def cruz():
         [-1.0, 0.0, 0.0, 1.0], [1.0, 0.0, 0.0, 1.0],   # segmento horizontal
         [0.0, -1.0, 0.0, 1.0], [0.0, 1.0, 0.0, 1.0],   # segmento vertical
     ], dtype='f4')
+
+
+# ---------------------------------------------------------------------------
+# Acessório da Sra. Coração.
+# ---------------------------------------------------------------------------
+
+def laco(abertura=0.55):
+    """
+    Laço para `TRIANGLES` com EBO: duas asas triangulares que se encontram no
+    centro, de `x = -1` a `x = 1`.
+
+    O vértice central é compartilhado pelas duas asas: são só 5 vértices
+    únicos, e o EBO os lê na ordem de 2 triângulos. `abertura` é a meia altura
+    de cada asa na ponta de fora.
+
+        v1         v4
+        |  \\     /  |      asa esquerda: v0, v1, v2
+        |    v0     |      asa direita:  v0, v3, v4
+        |  /     \\  |
+        v2         v3
+
+    Retorna o par (vértices, índices), como :func:`retangulo`.
+    """
+    vertices = np.array([
+        [ 0.0,  0.0,      0.0, 1.0],   # v0: centro (compartilhado)
+        [-1.0,  abertura, 0.0, 1.0],   # v1: asa esquerda, em cima
+        [-1.0, -abertura, 0.0, 1.0],   # v2: asa esquerda, embaixo
+        [ 1.0, -abertura, 0.0, 1.0],   # v3: asa direita, embaixo
+        [ 1.0,  abertura, 0.0, 1.0],   # v4: asa direita, em cima
+    ], dtype='f4')
+    indices = np.array([0, 1, 2, 0, 3, 4], dtype='u4')
+    return vertices, indices

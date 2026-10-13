@@ -62,9 +62,12 @@ def run_app(ctx: moderngl.Context, window: 'glfw._GLFWwindowPointerT') -> None:
     anterior (`dt`) e desenhada no *backbuffer*, que então é exibido.
     Ao final, libera a VRAM e encerra o GLFW.
     """
-    cena = Cena(ctx)
+    cena = Cena(ctx, window)
 
     glfw.set_key_callback(window, cena.tecla)
+    glfw.set_framebuffer_size_callback(window, cena.redimensionar)
+    # Viewport inicial: o callback só é chamado quando o tamanho muda.
+    cena.redimensionar(window, *glfw.get_framebuffer_size(window))
 
     instante_anterior = glfw.get_time()
     while not glfw.window_should_close(window):

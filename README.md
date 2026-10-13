@@ -7,7 +7,8 @@ A cena tem:
 - casa, árvore, grama e nuvens;
 - sol de dia e, à noite, lua crescente e estrelas;
 - chuva;
-- o Sr. Coração e a Sra. Coração.
+- estações do ano: árvore sem folhas no outono, neve no inverno e flores na primavera;
+- o Sr. Coração e a Sra. Coração, de laço.
 
 Tudo é desenhado com um único par de shaders (`src/app/shaders/`), reaproveitando poucas geometrias.
 
@@ -31,7 +32,8 @@ python src/app/main.py
 | D | dia / noite (cor de fundo e atenuação via uniform) |
 | R | liga / desliga a chuva |
 | C | troca a cor da casa |
-| A | troca a estação (cor) da árvore |
+| E | troca a estação do ano (verão, outono, inverno, primavera) |
+| F | liga / desliga a tela cheia (a cena fica quadrada, no centro do monitor) |
 | P | salva uma captura de tela em `capturas/` |
 | ESC | encerra o programa |
 
@@ -40,7 +42,7 @@ python src/app/main.py
 O programa registra no terminal, com data e hora, o que acontece durante a execução:
 
 - início e encerramento;
-- cada mudança de estado (dia/noite, chuva, cor da casa, estação da árvore);
+- cada mudança de estado (dia/noite, chuva, cor da casa, estação do ano, tela cheia);
 - capturas de tela salvas;
 - erros, em `stderr`.
 

@@ -9,7 +9,8 @@ H ................ exibe informações do hardware
 D ................ dia / noite
 R ................ liga / desliga a chuva
 C ................ troca a cor da casa
-A ................ troca a estação (cor) da árvore
+E ................ troca a estação do ano (verão, outono, inverno, primavera)
+F ................ liga / desliga a tela cheia
 P ................ salva uma captura de tela em capturas/
 ESC .............. encerra o programa"""
 
@@ -26,7 +27,8 @@ class Key(IntEnum):
     D = glfw.KEY_D
     R = glfw.KEY_R
     C = glfw.KEY_C
-    A = glfw.KEY_A
+    E = glfw.KEY_E
+    F = glfw.KEY_F
     P = glfw.KEY_P
     ESC = glfw.KEY_ESCAPE
 

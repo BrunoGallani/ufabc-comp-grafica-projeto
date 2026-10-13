@@ -3,10 +3,13 @@ Chão: a faixa de grama na parte de baixo da tela.
 
 É um único retângulo (`TRIANGLES` + EBO) que vai da borda de baixo da janela
 (`y = -1`) até `Y_CHAO`, ocupando toda a largura (`x` de -1 a 1).
+
+No inverno, a grama fica branca de neve. As flores da primavera são desenhadas
+por cima pela :class:`Flores`.
 """
 import moderngl
 
-from config import Y_CHAO
+from config import COR_NEVE, Y_CHAO, Estacao
 from geometria import retangulo
 from objetos.objeto_cena import ObjetoCena
 
@@ -28,6 +31,7 @@ class Chao(ObjetoCena):
 
     def desenhar(self, r, estado):
         """
-        Desenha a faixa de grama.
+        Desenha a faixa de grama (coberta de neve no inverno).
         """
-        r.desenhar(self.grama, 1.0, self.centro, COR_GRAMA)
+        cor = COR_NEVE if estado.estacao == Estacao.INVERNO else COR_GRAMA
+        r.desenhar(self.grama, 1.0, self.centro, cor)
