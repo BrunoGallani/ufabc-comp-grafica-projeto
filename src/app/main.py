@@ -40,7 +40,8 @@ def setup_glfw() -> tuple[moderngl.Context, 'glfw._GLFWwindowPointerT']:
     glfw.window_hint(glfw.OPENGL_PROFILE, glfw.OPENGL_CORE_PROFILE)
     glfw.window_hint(glfw.OPENGL_FORWARD_COMPAT, glfw.TRUE) # requisito para funcionamento no MacOS
     glfw.window_hint(glfw.SAMPLES, 4)
-    glfw.window_hint(glfw.RESIZABLE, False)
+    glfw.window_hint(glfw.AUTO_ICONIFY, False)
+    #glfw.window_hint(glfw.RESIZABLE, False)
 
     window = glfw.create_window(LARGURA_JANELA, ALTURA_JANELA, get_app_window_title(), None, None)
     if not window:
