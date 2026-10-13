@@ -11,6 +11,7 @@ Os objetos da cena nunca chamam o moderngl diretamente. Eles delegam esta tarefa
 import moderngl
 import numpy as np
 
+from config import COR_FAIXAS
 from geometria import curva_circulo
 from utils.shader_utils import get_shaders
 from typing import Any
@@ -108,6 +109,21 @@ class Renderizador:
         if uniforme is not None:
             uniforme.value = valor
 
+    def ajustar_viewport(self, largura: int, altura: int) -> None:
+        """
+        Faz a cena ocupar o maior quadrado centralizado que cabe na tela.
+
+        A cena é desenhada em NDC (de -1 a 1 nos dois eixos), e o viewport é o
+        retângulo de pixels para onde esse quadrado é levado. Se o viewport fosse
+        a tela inteira de um monitor 16:9, tudo seria esticado na horizontal e os
+        círculos virariam elipses. Com um viewport quadrado, as proporções se
+        mantêm e sobram faixas nas laterais, pintadas em :meth:`comecar_quadro`.
+        """
+        if largura == 0 or altura == 0:   # janela minimizada: nada a ajustar
+            return
+        lado = min(largura, altura)
+        self.ctx.viewport = ((largura - lado) // 2, (altura - lado) // 2, lado, lado)
+
     def comecar_quadro(self, cor_fundo: tuple[float, float, float, float],
                        atenuacao: float) -> None:
         """
@@ -116,7 +132,10 @@ class Renderizador:
         Um uniform mantém o valor até ser sobrescrito, então todos os desenhos do
         quadro usam a mesma atenuação.
         """
-        self.ctx.clear(*cor_fundo)
+        # O clear ignora o viewport e pinta a tela inteira: primeiro tudo com a
+        # cor das faixas e depois, só no quadrado da cena, a cor do céu.
+        self.ctx.clear(*COR_FAIXAS)
+        self.ctx.clear(*cor_fundo, viewport=self.ctx.viewport)
         self.atenuacao = atenuacao
         self.ajustar('u_atenuacao', atenuacao)
 
