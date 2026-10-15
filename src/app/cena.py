@@ -96,7 +96,7 @@ class Cena:
             self.casa,
             self.sra_coracao,
             self.sr_coracao,
-            Chuva(self.render),   # por último: a chuva cai na frente de tudo
+            Chuva(self.render, self.estado),   # por último: a chuva cai na frente de tudo
         ]
 
         # Teclas de ação: cada uma aponta para o método que a trata.
