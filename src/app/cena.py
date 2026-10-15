@@ -17,6 +17,7 @@ from objetos.chao import Chao
 from objetos.chuva import Chuva
 from objetos.flores import Flores
 from objetos.nuvem import Nuvem
+from objetos.raios_verao import RaiosVerao
 from objetos.senhor_coracao import SenhorCoracao
 from objetos.sra_coracao import SraCoracao
 from renderizador import Renderizador
@@ -85,6 +86,7 @@ class Cena:
         self.objetos = [
             Estrelas(self.render),
             Sol(self.render),
+            RaiosVerao(self.render),
             Lua(self.render),
             Nuvem(self.render, x=-0.55, y=0.74, tamanho=1.0, velocidade=0.05),
             Nuvem(self.render, x=0.15, y=0.46, tamanho=0.75, velocidade=0.08),

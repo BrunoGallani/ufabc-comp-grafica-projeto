@@ -44,7 +44,7 @@ class Estacao(Enum):
 
     O valor de cada uma é o nome exibido no log.
     """
-    VERAO = "verão"          # o padrão: a cena como ela é
+    VERAO = "verão"          # o padrão: o sol solta raios de calor
     OUTONO = "outono"        # a árvore perde as folhas
     INVERNO = "inverno"      # a grama e a copa ficam brancas de neve
     PRIMAVERA = "primavera"  # aparecem flores na grama e na árvore
