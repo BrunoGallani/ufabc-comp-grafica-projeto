@@ -7,7 +7,7 @@ A cena tem:
 - casa, árvore, grama e nuvens;
 - sol de dia e, à noite, lua crescente e estrelas;
 - chuva;
-- estações do ano: árvore sem folhas no outono, neve no inverno e flores na primavera;
+- estações do ano: raios de calor saindo do sol no verão, árvore sem folhas no outono, neve no inverno e flores na primavera;
 - o Sr. Coração e a Sra. Coração, de laço.
 
 Tudo é desenhado com um único par de shaders (`src/app/shaders/`), reaproveitando poucas geometrias.
