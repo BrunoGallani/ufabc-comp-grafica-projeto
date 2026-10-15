@@ -225,3 +225,34 @@ def laco(abertura=0.55):
     ], dtype='f4')
     indices = np.array([0, 1, 2, 0, 3, 4], dtype='u4')
     return vertices, indices
+
+
+def bitmap(mascara):
+    """
+    Imagem em preto e branco para `TRIANGLES` com EBO: cada pixel aceso vira um
+    quadrado de lado 1, e a imagem inteira fica centrada na origem.
+
+    `mascara` é um arranjo booleano `(linhas, colunas)`, com a linha 0 em cima,
+    como nos arquivos de imagem. Pixels acesos vizinhos na mesma linha formam
+    um retângulo só: a barra de cima de um "E" vira um retângulo comprido, e
+    não vários quadradinhos. Cada retângulo segue o padrão de :func:`retangulo`
+    (4 vértices e 6 índices).
+
+    Retorna o par (vértices, índices), como :func:`retangulo`.
+    """
+    altura, largura = mascara.shape
+    bordas = np.diff(np.pad(mascara.astype(np.int8), ((0, 0), (1, 1))), axis=1)
+    linhas, inicio = np.nonzero(bordas == 1)
+    _, fim = np.nonzero(bordas == -1)
+
+    esquerda, direita = inicio - largura / 2.0, fim - largura / 2.0
+    topo = altura / 2.0 - linhas
+    base = topo - 1.0
+
+    n = len(linhas)
+    vertices = np.zeros((n, 4, 4), dtype='f4')
+    vertices[:, :, 0] = np.column_stack((esquerda, direita, direita, esquerda))
+    vertices[:, :, 1] = np.column_stack((base, base, topo, topo))
+    vertices[:, :, 3] = 1.0
+    indices = np.array([0, 1, 2, 2, 3, 0], dtype='u4') + 4 * np.arange(n, dtype='u4')[:, None]
+    return vertices.reshape(-1, 4), indices.reshape(-1)
