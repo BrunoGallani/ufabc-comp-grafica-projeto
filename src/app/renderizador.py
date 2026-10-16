@@ -166,6 +166,35 @@ class Renderizador:
         self.desenhar(malha, escala, deslocamento, cor)
         self.ajustar('u_atenuacao', self.atenuacao)
 
+    def desenhar_translucido(self, malha: Malha, escala: float, deslocamento: tuple[float, float],
+                             cor: tuple[float, float, float, float]) -> None:
+        """
+        Desenha algo por cima da cena, como o painel de informações (tecla I).
+
+        Há duas diferenças em relação a :meth:`desenhar`:
+
+        - **Transparência:** com o *blending* ligado, o alpha da cor passa a valer, e a
+          cor do pixel vira `alpha * cor + (1 - alpha) * cor que já estava lá`. Ele só
+          fica ligado durante este desenho: o resto da cena tem alpha 1;
+        - **Sem atenuação:** como em :meth:`desenhar_emissivo`, a noite e a chuva
+          não escurecem o desenho.
+        """
+        self.ctx.enable(moderngl.BLEND)
+        # Os dois últimos fatores valem para o canal alpha: o alpha da tela
+        # continua 1, para que a janela não fique transparente no compositor.
+        self.ctx.blend_func = (moderngl.SRC_ALPHA, moderngl.ONE_MINUS_SRC_ALPHA,
+                               moderngl.ZERO, moderngl.ONE)
+        self.desenhar_emissivo(malha, escala, deslocamento, cor)
+        self.ctx.disable(moderngl.BLEND)
+
+    def liberar_malha(self, malha: Malha) -> None:
+        """
+        Libera uma malha antes do fim do programa: é o caso do texto do painel de
+        informações, refeito sempre que o estado da cena muda.
+        """
+        self._malhas.remove(malha)
+        malha.liberar()
+
     def liberar(self) -> None:
         """
         Libera todas as malhas e o programa de shaders, na ordem inversa da criação.

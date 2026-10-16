@@ -17,6 +17,7 @@ from objetos.chao import Chao
 from objetos.chuva import Chuva
 from objetos.flores import Flores
 from objetos.nuvem import Nuvem
+from objetos.painel_info import PainelInfo
 from objetos.raios_verao import RaiosVerao
 from objetos.senhor_coracao import SenhorCoracao
 from objetos.sra_coracao import SraCoracao
@@ -35,6 +36,7 @@ class EstadoCena:
     - **Noite:** define se está dia ou noite (controle pela tecla D);
     - **Chovendo:** define se está chovendo ou não (controle pela tecla R);
     - **Estação:** define a estação do ano (controle pela tecla E);
+    - **Painel:** define se o painel com o estado da cena aparece (controle pela tecla I);
     - **Tempo:** representa os segundos transcorridos desde o início (é usado em animações);
     - **Cor do céu:** define a cor do céu.
     """
@@ -43,6 +45,7 @@ class EstadoCena:
         self.noite = False
         self.chovendo = False
         self.estacao = Estacao.VERAO
+        self.painel = False
         self.tempo = 0.0
         self.cor_do_ceu = CEU_DIA
 
@@ -96,7 +99,8 @@ class Cena:
             self.casa,
             self.sra_coracao,
             self.sr_coracao,
-            Chuva(self.render, self.estado),   # por último: a chuva cai na frente de tudo
+            Chuva(self.render, self.estado),   # a chuva cai na frente de tudo...
+            PainelInfo(self.render, self.informacoes),   # ...menos do painel (tecla I)
         ]
 
         # Teclas de ação: cada uma aponta para o método que a trata.
@@ -104,6 +108,7 @@ class Cena:
         self.acoes = {
             Key.K: self.mostrar_ajuda,
             Key.H: self.mostrar_hardware,
+            Key.I: self.alternar_painel,
             Key.D: self.alternar_noite,
             Key.R: self.alternar_chuva,
             Key.C: self.trocar_cor_casa,
@@ -156,6 +161,14 @@ class Cena:
         Exibe no terminal as informações do driver e da placa de vídeo (tecla H).
         """
         Log.d(f"Propriedades do driver/hardware:\n{log_hardware_properties(self.ctx)}")
+
+    def alternar_painel(self) -> None:
+        """
+        Mostra ou esconde o painel com o estado da cena (tecla I).
+        """
+        self.estado.painel = not self.estado.painel
+        Log.d("Painel de informações ligado" if self.estado.painel
+              else "Painel de informações desligado")
 
     def alternar_noite(self) -> None:
         """
@@ -222,6 +235,18 @@ class Cena:
         if self.estado.noite:
             return CEU_NOITE_CHUVA if self.estado.chovendo else CEU_NOITE
         return CEU_DIA_CHUVA if self.estado.chovendo else CEU_DIA
+
+    def informacoes(self) -> list[tuple[str, str]]:
+        """
+        Retorna os pares (rótulo, valor) exibidos no painel de informações (tecla I).
+        """
+        return [
+            ("Horário", "noite" if self.estado.noite else "dia"),
+            ("Chuva", "ligada" if self.estado.chovendo else "desligada"),
+            ("Estação", self.estado.estacao.value),
+            ("Cor da casa", PALETA_PAREDE[self.casa.indice_cor][0]),
+            ("Tela cheia", "sim" if glfw.get_window_monitor(self.window) else "não"),
+        ]
 
     def atenuacao(self) -> float:
         """

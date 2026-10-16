@@ -6,6 +6,7 @@ Setas ............ o Sr. Coração olha
 Shift + setas .... o Sr. Coração anda
 K ................ exibe no terminal o tutorial com as teclas de controle
 H ................ exibe informações do hardware
+I ................ mostra / esconde o painel com o estado da cena
 D ................ dia / noite
 R ................ liga / desliga a chuva
 C ................ troca a cor da casa
@@ -24,6 +25,7 @@ class Key(IntEnum):
     SETA_ESQUERDA = glfw.KEY_LEFT
     K = glfw.KEY_K
     H = glfw.KEY_H
+    I = glfw.KEY_I
     D = glfw.KEY_D
     R = glfw.KEY_R
     C = glfw.KEY_C

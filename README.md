@@ -8,9 +8,10 @@ A cena tem:
 - sol de dia e, à noite, lua crescente e estrelas;
 - chuva;
 - estações do ano: raios de calor saindo do sol no verão, árvore sem folhas no outono, neve no inverno e flores na primavera;
-- o Sr. Coração e a Sra. Coração, de laço.
+- o Sr. Coração e a Sra. Coração, de laço;
+- um painel com o estado da cena (horário, chuva, estação, cor da casa, tela cheia), num retângulo cinza translúcido.
 
-Tudo é desenhado com um único par de shaders (`src/app/shaders/`), reaproveitando poucas geometrias.
+Tudo é desenhado com um único par de shaders (`src/app/shaders/`), reaproveitando poucas geometrias. Até o texto do painel: o Pillow escreve as letras numa imagem em preto e branco, e cada pixel aceso vira um retângulo.
 
 ## Como rodar
 
@@ -29,6 +30,7 @@ python src/app/main.py
 | Shift + setas | o Sr. Coração anda |
 | K | exibe no terminal o tutorial com as teclas de controle |
 | H | exibe no terminal as informações do driver e da placa de vídeo |
+| I | mostra / esconde o painel com o estado da cena |
 | D | dia / noite (cor de fundo e atenuação via uniform) |
 | R | liga / desliga a chuva |
 | C | troca a cor da casa |
@@ -42,7 +44,7 @@ python src/app/main.py
 O programa registra no terminal, com data e hora, o que acontece durante a execução:
 
 - início e encerramento;
-- cada mudança de estado (dia/noite, chuva, cor da casa, estação do ano, tela cheia);
+- cada mudança de estado (dia/noite, chuva, cor da casa, estação do ano, tela cheia, painel);
 - capturas de tela salvas;
 - erros, em `stderr`.
 
