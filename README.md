@@ -13,6 +13,12 @@ A cena tem:
 
 Tudo é desenhado com um único par de shaders (`src/app/shaders/`), reaproveitando poucas geometrias. Até o texto do painel: o Pillow escreve as letras numa imagem em preto e branco, e cada pixel aceso vira um retângulo.
 
+## Requisitos
+
+- Python 3.11;
+- Dependências descritas no arquivo `requirements.txt`;
+- Placa de vídeo com suporte a OpenGL 4.0.
+
 ## Como rodar
 
 ```bash
