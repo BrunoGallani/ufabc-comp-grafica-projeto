@@ -1,8 +1,17 @@
 import sys
+from datetime import datetime, timedelta, timezone
 
-from moderngl import Context
+# Horário de Brasília: UTC-3, sem horário de verão desde 2019. O fuso fixo não
+# depende do banco de fusos horários do sistema, que o Windows não tem.
+BRT = timezone(timedelta(hours=-3), "BRT")
 
-from utils.date_utils import get_date_prefix
+def get_date_prefix() -> str:
+    """
+    Retorna um prefixo de data no formato `[AAAA-MM-DD hh:mm:ss.mmm BRT]`,
+    usando o fuso horário de Brasília. Este prefixo é utilizado nos logs do programa.
+    """
+    agora = datetime.now(BRT)
+    return f"[{agora:%Y-%m-%d %H:%M:%S}.{agora.microsecond // 1000:03d} BRT]"
 
 class Log:
     """
@@ -28,12 +37,3 @@ class Log:
         Registra um erro no terminal (`stderr`), com data e hora.
         """
         print(f"{get_date_prefix()} ERRO: {msg}", file=sys.stderr, flush=True)
-
-def log_hardware_properties(ctx: Context) -> str:
-    """
-    Retorna as propriedades do driver e da placa de vídeo do contexto, uma por linha.
-    """
-    return (f"GL_VERSION  : {ctx.info['GL_VERSION']}\n"
-            f"GL_RENDERER : {ctx.info['GL_RENDERER']}\n"
-            f"GL_VENDOR   : {ctx.info['GL_VENDOR']}\n"
-            f"GL (código de versão) : {ctx.version_code}")

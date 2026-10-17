@@ -2,5 +2,4 @@
 glfw
 moderngl
 numpy
-pyglm
 pillow>=10.1   # load_default_imagefont, a fonte do painel (tecla I)

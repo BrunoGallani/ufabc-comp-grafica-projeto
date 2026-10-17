@@ -4,6 +4,7 @@ Módulo orquestrador do programa. Possui as seguintes classes:
 - :class:`EstadoCena`
 - :class:`Cena`
 """
+from dataclasses import dataclass
 
 import glfw
 import moderngl
@@ -12,7 +13,7 @@ from config import (ATENUACAO_CHUVA, ATENUACAO_NOITE, CEU_DIA, CEU_DIA_CHUVA,
                     CEU_NOITE, CEU_NOITE_CHUVA, Y_CHAO, Estacao)
 from objetos.arvore import Arvore
 from objetos.astros import Estrelas, Lua, Sol
-from objetos.casa import PALETA_PAREDE, Casa
+from objetos.casa import Casa
 from objetos.chao import Chao
 from objetos.chuva import Chuva
 from objetos.flores import Flores
@@ -23,31 +24,21 @@ from objetos.senhor_coracao import SenhorCoracao
 from objetos.sra_coracao import SraCoracao
 from renderizador import Renderizador
 from utils.screenshot_utils import save_screenshot
-from utils.keyboard_utils import AJUDA_TECLAS, Key
-from utils.log_utils import log_hardware_properties, Log
+from utils.keyboard_utils import AJUDA_TECLAS, SETAS, Key
+from utils.log_utils import Log
 from utils.window_utils import toggle_fullscreen
 
+@dataclass
 class EstadoCena:
     """
     Estado da cena: a cena altera, os objetos só leem.
-
-    Possui os seguintes atributos:
-
-    - **Noite:** define se está dia ou noite (controle pela tecla D);
-    - **Chovendo:** define se está chovendo ou não (controle pela tecla R);
-    - **Estação:** define a estação do ano (controle pela tecla E);
-    - **Painel:** define se o painel com o estado da cena aparece (controle pela tecla I);
-    - **Tempo:** representa os segundos transcorridos desde o início (é usado em animações);
-    - **Cor do céu:** define a cor do céu.
     """
-
-    def __init__(self) -> None:
-        self.noite = False
-        self.chovendo = False
-        self.estacao = Estacao.VERAO
-        self.painel = False
-        self.tempo = 0.0
-        self.cor_do_ceu = CEU_DIA
+    noite: bool = False                 # dia ou noite (tecla D)
+    chovendo: bool = False              # chuva ligada ou desligada (tecla R)
+    estacao: Estacao = Estacao.VERAO    # estação do ano (tecla E)
+    painel: bool = False                # painel com o estado da cena (tecla I)
+    tempo: float = 0.0                  # segundos desde o início, usados nas animações
+    cor_do_ceu: tuple[float, float, float, float] = CEU_DIA   # recalculada a cada quadro
 
 class Cena:
     """
@@ -56,7 +47,7 @@ class Cena:
     Possui os seguintes atributos:
 
     - **Contexto:** o contexto `moderngl` da janela;
-    - **Janela:** a janela do GLFW, usada pela tecla F (tela cheia);
+    - **Janela:** a janela do GLFW, usada pelas teclas F (tela cheia) e ESC;
     - **Renderizador:** o :class:`Renderizador`, único ponto de contato com a GPU;
     - **Estado:** o :class:`EstadoCena`, alterado pelas teclas e lido pelos objetos;
     - **Pedido de captura:** quando verdadeiro, o próximo quadro é salvo em PNG (tecla P);
@@ -64,12 +55,8 @@ class Cena:
     - **Ações:** liga cada tecla de ação ao método que a trata.
 
     O Sr. Coração e a casa também ficam em atributos próprios, pois recebem
-    comandos do teclado; a árvore, porque as flores precisam saber onde ela está.
+    comandos do teclado.
     """
-
-    __slots__ = ("ctx", "window", "render", "estado",
-                 "pedir_captura", "sr_coracao", "sra_coracao",
-                 "casa", "arvore", "objetos", "acoes")
 
     def __init__(self, ctx: moderngl.Context, window: 'glfw._GLFWwindowPointerT') -> None:
         self.ctx = ctx
@@ -79,10 +66,10 @@ class Cena:
         self.pedir_captura = False
 
         self.sr_coracao = SenhorCoracao(self.render, posicao=(-0.06, Y_CHAO + 0.19), tamanho=0.40)
-        self.sra_coracao = SraCoracao(self.render, alvo=self.sr_coracao,
-                                      posicao=(0.38, Y_CHAO + 0.16), tamanho=0.34)
+        sra_coracao = SraCoracao(self.render, alvo=self.sr_coracao,
+                                 posicao=(0.38, Y_CHAO + 0.16), tamanho=0.34)
         self.casa = Casa(self.render)
-        self.arvore = Arvore(self.render)
+        arvore = Arvore(self.render)
 
         # A ORDEM desta lista é a ordem de desenho: do fundo para a frente.
         # Quem é desenhado depois fica POR CIMA (não há teste de profundidade).
@@ -94,12 +81,12 @@ class Cena:
             Nuvem(self.render, x=-0.55, y=0.74, tamanho=1.0, velocidade=0.05),
             Nuvem(self.render, x=0.15, y=0.46, tamanho=0.75, velocidade=0.08),
             Chao(self.render),
-            self.arvore,
-            Flores(self.render, arvore=self.arvore),   # por cima da grama e da copa
+            arvore,
+            Flores(self.render, arvore=arvore),   # por cima da grama e da copa
             self.casa,
-            self.sra_coracao,
+            sra_coracao,
             self.sr_coracao,
-            Chuva(self.render, self.estado),   # a chuva cai na frente de tudo...
+            Chuva(self.render),                          # a chuva cai na frente de tudo...
             PainelInfo(self.render, self.informacoes),   # ...menos do painel (tecla I)
         ]
 
@@ -115,6 +102,7 @@ class Cena:
             Key.E: self.trocar_estacao,
             Key.F: self.alternar_tela_cheia,
             Key.P: self.agendar_captura,
+            Key.ESC: self.fechar,
         }
 
     # ------------------------------------------------------------------ teclado
@@ -124,31 +112,21 @@ class Cena:
         Callback de teclado: o GLFW a chama uma vez por evento.
 
         É registrada em `main.py` com `glfw.set_key_callback(window, cena.tecla)`.
-        As setas aceitam `PRESS` e `REPEAT` (segurar a tecla gera movimento contínuo);
-        as demais teclas são do tipo liga/desliga e só reagem a `PRESS`: cada uma
-        chama o seu método, procurado no dicionário `acoes`.
+        As setas aceitam `PRESS` e `REPEAT` (segurar a tecla gera movimento contínuo)
+        e movem o Sr. Coração: com Shift ele anda; sem, olha. As demais teclas
+        só reagem a `PRESS` (com `REPEAT`, segurar a tecla ficaria alternando sem
+        parar): cada uma chama o seu método, procurado no dicionário `acoes`.
         """
         if action == glfw.RELEASE:
             return
 
-        if key == Key.ESC:
-            glfw.set_window_should_close(window, True)
-            return
-
-        if key in Key.setas():
-            if mods & glfw.MOD_SHIFT:     # Shift apertado junto
-                self.sr_coracao.andar(key)
+        if key in SETAS:
+            if mods & glfw.MOD_SHIFT:
+                self.sr_coracao.andar(*SETAS[key])
             else:
-                self.sr_coracao.olhar(key)
-            return
-
-        # Com REPEAT, segurar a tecla ficaria alternando sem parar.
-        if action == glfw.REPEAT:
-            return
-
-        acao = self.acoes.get(key)
-        if acao is not None:   # teclas sem ação são ignoradas
-            acao()
+                self.sr_coracao.olhar(*SETAS[key])
+        elif action == glfw.PRESS and key in self.acoes:   # teclas sem ação são ignoradas
+            self.acoes[key]()
 
     def mostrar_ajuda(self) -> None:
         """
@@ -160,7 +138,12 @@ class Cena:
         """
         Exibe no terminal as informações do driver e da placa de vídeo (tecla H).
         """
-        Log.d(f"Propriedades do driver/hardware:\n{log_hardware_properties(self.ctx)}")
+        info = self.ctx.info
+        Log.d("Propriedades do driver/hardware:\n"
+              f"GL_VERSION  : {info['GL_VERSION']}\n"
+              f"GL_RENDERER : {info['GL_RENDERER']}\n"
+              f"GL_VENDOR   : {info['GL_VENDOR']}\n"
+              f"GL (código de versão) : {self.ctx.version_code}")
 
     def alternar_painel(self) -> None:
         """
@@ -188,7 +171,8 @@ class Cena:
         """
         Passa a casa para a próxima cor da paleta (tecla C).
         """
-        Log.d(f"Casa: cor '{self.casa.proxima_cor()}' {PALETA_PAREDE[self.casa.indice_cor][1]}")
+        self.casa.proxima_cor()
+        Log.d(f"Casa: cor '{self.casa.nome_cor}' {self.casa.cor_parede}")
 
     def trocar_estacao(self) -> None:
         """
@@ -211,6 +195,12 @@ class Cena:
         Pede que o próximo quadro seja salvo em PNG (tecla P).
         """
         self.pedir_captura = True
+
+    def fechar(self) -> None:
+        """
+        Pede que o programa seja encerrado (tecla ESC): o laço principal termina.
+        """
+        glfw.set_window_should_close(self.window, True)
 
     # ------------------------------------------------------------------ janela
     def redimensionar(self, window: 'glfw._GLFWwindowPointerT', largura: int,
@@ -244,7 +234,7 @@ class Cena:
             ("Horário", "noite" if self.estado.noite else "dia"),
             ("Chuva", "ligada" if self.estado.chovendo else "desligada"),
             ("Estação", self.estado.estacao.value),
-            ("Cor da casa", PALETA_PAREDE[self.casa.indice_cor][0]),
+            ("Cor da casa", self.casa.nome_cor),
             ("Tela cheia", "sim" if glfw.get_window_monitor(self.window) else "não"),
         ]
 

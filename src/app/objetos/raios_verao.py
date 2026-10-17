@@ -34,41 +34,27 @@ class RaiosVerao(ObjetoCena):
 
     def __init__(self, r, semente=5):
         gerador = np.random.default_rng(semente)
-        self.raios = []   # cada raio: [malha, direção (cos, sen), distância já percorrida]
+        self.raios = []   # cada raio: (malha, direção (cos, sen), ponto de partida no percurso)
         for k in range(N_RAIOS):
             # Meio passo a mais que os triângulos do Sol: o raio fica no vão entre dois deles.
             angulo = 2.0 * math.pi * (k + 0.5) / N_RAIOS
             v, i = retangulo_girado(COMPRIMENTO, ESPESSURA, angulo)
             malha = r.criar_malha(v, moderngl.TRIANGLES, indices=i)
             direcao = (math.cos(angulo), math.sin(angulo))
-            self.raios.append([malha, direcao, float(gerador.uniform(0.0, PERCURSO))])
-
-    @staticmethod
-    def visivel(estado):
-        """
-        Os raios só aparecem no verão, de dia e sem chuva.
-        """
-        return estado.estacao == Estacao.VERAO and not estado.noite and not estado.chovendo
-
-    def atualizar(self, dt, estado):
-        """
-        Faz cada raio andar `VELOCIDADE * dt` para fora; o raio que completa o
-        `PERCURSO` volta à posição original, como um raio novo.
-        """
-        if not self.visivel(estado):
-            return
-        for raio in self.raios:
-            raio[2] = (raio[2] + VELOCIDADE * dt) % PERCURSO
+            self.raios.append((malha, direcao, float(gerador.uniform(0.0, PERCURSO))))
 
     def desenhar(self, r, estado):
         """
-        Desenha cada raio na sua distância do sol. Ao nascer, o raio cresce; ao
-        fim do percurso, encolhe e vai tomando a cor do céu até sumir.
+        Desenha cada raio na sua distância do sol, só no verão, de dia e sem chuva.
+        Ao nascer, o raio cresce; ao fim do percurso, encolhe e vai tomando a cor
+        do céu até sumir.
         """
-        if not self.visivel(estado):
+        if estado.estacao != Estacao.VERAO or estado.noite or estado.chovendo:
             return
         cx, cy = CENTRO_ASTRO
-        for malha, (dx, dy), percorrido in self.raios:
+        for malha, (dx, dy), partida in self.raios:
+            # O raio anda VELOCIDADE NDC por segundo e recomeça a cada PERCURSO.
+            percorrido = (partida + VELOCIDADE * estado.tempo) % PERCURSO
             fracao = percorrido / PERCURSO
             # Sobe de 0 a 1 no começo, fica em 1 e desce a 0 no fim do percurso.
             intensidade = min(1.0, fracao / SURGIR, (1.0 - fracao) / SUMIR)

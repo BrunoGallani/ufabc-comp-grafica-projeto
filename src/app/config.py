@@ -1,10 +1,10 @@
 """
 Configurações globais da cena.
 
-Possui os "botões de ajuste" usados por várias partes do programa: tamanho da
-janela, altura do chão, cores do céu, fatores de atenuação, estações do ano e
-pasta das capturas. As cores de cada objeto (casa, árvore...) ficam no arquivo
-do próprio objeto.
+Possui os "botões de ajuste" usados por várias partes do programa: tamanho e
+título da janela, altura do chão, cores do céu, fatores de atenuação, estações
+do ano e pasta das capturas. As cores de cada objeto (casa, árvore...) ficam no
+arquivo do próprio objeto.
 
 Todas as medidas estão em NDC (*Normalized Device Coordinates*): o OpenGL desenha
 num quadrado que vai de -1 a +1 nos dois eixos, em que `(0, 0)` é o centro da
@@ -18,6 +18,7 @@ from pathlib import Path
 # pixels do que uma unidade em y, e os círculos virariam elipses.
 LARGURA_JANELA = 720
 ALTURA_JANELA = 720
+TITULO_JANELA = "Cena 2D: Sr. e Sra. Coração e seus amigos"
 
 # Em tela cheia (tecla F), a cena continua quadrada, no centro do monitor; as
 # faixas que sobram nas laterais são pintadas com esta cor.

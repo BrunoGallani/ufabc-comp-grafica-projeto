@@ -1,10 +1,11 @@
-from utils.naming_utils import get_app_window_title
-from utils.log_utils import Log
-from config import LARGURA_JANELA, ALTURA_JANELA
-from cena import Cena
 import sys
+
 import glfw
 import moderngl
+
+from cena import Cena
+from config import ALTURA_JANELA, LARGURA_JANELA, TITULO_JANELA
+from utils.log_utils import Log
 
 def glfw_error(error_code: int, error_message: str) -> None:
     """
@@ -17,15 +18,9 @@ def glfw_error(error_code: int, error_message: str) -> None:
 
 def setup_glfw() -> tuple[moderngl.Context, 'glfw._GLFWwindowPointerT']:
     """
-    Realiza o setup inicial do GLFW. Para isso, as seguintes ações são realizadas:
+    Inicializa o GLFW, cria a janela com contexto OpenGL 4.0 Core e retorna o
+    par (contexto `moderngl`, janela).
 
-    - Inicializa o GLFW;
-    - Define o callback de erro;
-    - Configura as restrições de hardware e driver;
-    - Cria a janela com as configurações desejadas;
-    - Cria o contexto `moderngl`.
-
-    Ao final destes passos, é retornado o par (contexto `moderngl`, janela).
     Se o GLFW ou a janela falharem, o erro é registrado e o programa é encerrado.
     """
     glfw.set_error_callback(glfw_error)
@@ -39,11 +34,10 @@ def setup_glfw() -> tuple[moderngl.Context, 'glfw._GLFWwindowPointerT']:
     glfw.window_hint(glfw.CONTEXT_VERSION_MINOR, 0)
     glfw.window_hint(glfw.OPENGL_PROFILE, glfw.OPENGL_CORE_PROFILE)
     glfw.window_hint(glfw.OPENGL_FORWARD_COMPAT, glfw.TRUE) # requisito para funcionamento no MacOS
-    glfw.window_hint(glfw.SAMPLES, 4)
-    glfw.window_hint(glfw.AUTO_ICONIFY, False)
-    #glfw.window_hint(glfw.RESIZABLE, False)
+    glfw.window_hint(glfw.SAMPLES, 4)                       # antialiasing (MSAA, 4 amostras)
+    glfw.window_hint(glfw.AUTO_ICONIFY, False)              # tela cheia não minimiza sem foco
 
-    window = glfw.create_window(LARGURA_JANELA, ALTURA_JANELA, get_app_window_title(), None, None)
+    window = glfw.create_window(LARGURA_JANELA, ALTURA_JANELA, TITULO_JANELA, None, None)
     if not window:
         Log.e("não foi possível criar a janela (o driver suporta OpenGL 4.0 Core?).")
         glfw.terminate()
@@ -91,8 +85,7 @@ def main() -> None:
     Função principal do programa.
     """
     Log.d("Esta cena é interativa!"
-        "\nAperte a tecla 'K' para visualizar o tutorial no terminal.")
-    
+          "\nAperte a tecla 'K' para visualizar o tutorial no terminal.")
     run_app(*setup_glfw())
 
 if __name__ == "__main__":

@@ -116,7 +116,7 @@ def retangulo_girado(comprimento, espessura, angulo):
     """
     Retângulo de :func:`retangulo` deitado ao longo de `angulo` (em radianos),
     ainda centrado na origem. É um raio de calor do verão.
-     """
+    """
     vertices, indices = retangulo(comprimento, espessura)
     c, s = np.cos(angulo), np.sin(angulo)
     x, y = vertices[:, 0].copy(), vertices[:, 1].copy()

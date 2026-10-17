@@ -52,7 +52,8 @@ class Lua(ObjetoCena):
     """
     RAIO = 0.10
     COR = (0.96, 0.95, 0.82, 1.0)
-    DESLOCAMENTO_SOMBRA = (-0.045, 0.030)   # onde fica o círculo que "morde" a lua
+    # Centro do círculo que "morde" a lua: um pouco à esquerda e acima do dela.
+    CENTRO_SOMBRA = (CENTRO_ASTRO[0] - 0.045, CENTRO_ASTRO[1] + 0.030)
 
     def __init__(self, r):
         self.disco = r.circulo
@@ -69,9 +70,7 @@ class Lua(ObjetoCena):
         # precisa ter exatamente a cor do fundo. Se fosse atenuada, ficaria mais
         # escura que o céu e apareceria como uma mancha.
         r.desenhar_emissivo(self.disco, self.RAIO, CENTRO_ASTRO, self.COR)
-        centro_sombra = (CENTRO_ASTRO[0] + self.DESLOCAMENTO_SOMBRA[0],
-                         CENTRO_ASTRO[1] + self.DESLOCAMENTO_SOMBRA[1])
-        r.desenhar_emissivo(self.disco, self.RAIO * 0.92, centro_sombra, estado.cor_do_ceu)
+        r.desenhar_emissivo(self.disco, self.RAIO * 0.92, self.CENTRO_SOMBRA, estado.cor_do_ceu)
 
 
 class Estrelas(ObjetoCena):

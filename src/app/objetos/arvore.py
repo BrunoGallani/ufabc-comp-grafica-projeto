@@ -46,6 +46,7 @@ class Arvore(ObjetoCena):
 
     def __init__(self, r, x=0.78):
         self.x = x
+        self.topo = Y_CHAO + ALTURA_TRONCO   # topo do tronco: onde nascem a copa e os galhos
         self.circulo = r.circulo
         v, i = retangulo(LARGURA_TRONCO, ALTURA_TRONCO)
         self.tronco = r.criar_malha(v, moderngl.TRIANGLES, indices=i)
@@ -57,13 +58,12 @@ class Arvore(ObjetoCena):
         """
         r.desenhar(self.tronco, 1.0, (self.x, Y_CHAO + ALTURA_TRONCO / 2), COR_TRONCO)
 
-        topo = Y_CHAO + ALTURA_TRONCO
         if estado.estacao == Estacao.OUTONO:
             # Sem folhas: os galhos, da cor do tronco, numa única chamada.
-            r.desenhar(self.galhos, 1.0, (self.x, topo), COR_TRONCO)
+            r.desenhar(self.galhos, 1.0, (self.x, self.topo), COR_TRONCO)
             return
 
         cor_copa = COR_NEVE if estado.estacao == Estacao.INVERNO else COR_COPA
         for dx, dy, raio in COPA:
             # O círculo tem raio 1; com u_escala = raio, ele fica do tamanho certo.
-            r.desenhar(self.circulo, raio, (self.x + dx, topo + dy), cor_copa)
+            r.desenhar(self.circulo, raio, (self.x + dx, self.topo + dy), cor_copa)

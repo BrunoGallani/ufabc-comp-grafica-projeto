@@ -1,6 +1,6 @@
 # Cena 2D: Sr. Coração e seus amigos
 
-Trabalho prático de Computação Gráfica (MCCC007-23, UFABC): uma cena 2D interativa em Python, com OpenGL 4.0 Core (`glfw`, `moderngl` e `numpy`). Ela expande o exemplo do **Sr. Coração**.
+Trabalho prático de Computação Gráfica (MCCC007-23, UFABC): uma cena 2D interativa em Python, com OpenGL 4.0 Core (`glfw`, `moderngl`, `numpy` e `pillow`). Ela expande o exemplo do **Sr. Coração**.
 
 A cena tem:
 
@@ -59,5 +59,5 @@ src/app/
 ├── config.py          constantes globais (janela, chão, cores do céu, atenuação)
 ├── objetos/           uma classe por elemento da cena (herdam de ObjetoCena)
 ├── shaders/           main_vertex_shader.vert e main_frag_shader.frag
-└── utils/             funções auxiliares (logs, teclado, data, título, shaders, capturas)
+└── utils/             funções auxiliares (logs, teclado, shaders, tela cheia, capturas)
 ```

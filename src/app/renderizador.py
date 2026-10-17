@@ -8,13 +8,14 @@ Concentra tudo o que interage com a placa de vídeo (GPU):
 Os objetos da cena nunca chamam o moderngl diretamente. Eles delegam esta tarefa ao
 :class:`Renderizador`.
 """
+from typing import Any
+
 import moderngl
 import numpy as np
 
 from config import COR_FAIXAS
 from geometria import curva_circulo
 from utils.shader_utils import get_shaders
-from typing import Any
 
 class Malha:
     """
@@ -63,8 +64,6 @@ class Renderizador:
     - **Atenuação:** o valor de `u_atenuacao` do quadro atual;
     - **Círculo:** a malha compartilhada mais usada na cena.
     """
-
-    __slots__ = ("ctx", "prog", "_malhas", "atenuacao", "circulo")
 
     def __init__(self, ctx: moderngl.Context) -> None:
         self.ctx = ctx

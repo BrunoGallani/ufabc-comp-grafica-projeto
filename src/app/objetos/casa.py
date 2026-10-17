@@ -12,6 +12,8 @@ Tecla C: troca a cor das paredes (percorre a `PALETA_PAREDE`).
 À noite as janelas "acendem": são desenhadas como emissivas, ou seja, não
 sofrem a atenuação da noite (veja :meth:`Renderizador.desenhar_emissivo`).
 """
+import itertools
+
 import moderngl
 
 from config import Y_CHAO
@@ -50,7 +52,8 @@ class Casa(ObjetoCena):
 
     def __init__(self, r, centro_x=-0.58):
         self.x = centro_x
-        self.indice_cor = 0          # posição atual na PALETA_PAREDE
+        self.paleta = itertools.cycle(PALETA_PAREDE)   # volta ao início depois da última cor
+        self.nome_cor, self.cor_parede = next(self.paleta)
         self.circulo = r.circulo     # malha compartilhada (arco e maçaneta)
 
         # Cada peça com proporção diferente precisa da sua própria malha,
@@ -65,13 +68,11 @@ class Casa(ObjetoCena):
                                      moderngl.TRIANGLES)
         self.caixilho = r.criar_malha(cruz(), moderngl.LINES)            # usada 2x
 
-    def proxima_cor(self) -> str:
+    def proxima_cor(self):
         """
-        Avança para a próxima cor da paleta (tecla C), voltando ao início no fim,
-        e retorna o nome dela.
+        Avança para a próxima cor da paleta (tecla C), voltando ao início no fim.
         """
-        self.indice_cor = (self.indice_cor + 1) % len(PALETA_PAREDE)
-        return PALETA_PAREDE[self.indice_cor][0]
+        self.nome_cor, self.cor_parede = next(self.paleta)
 
     def desenhar(self, r, estado):
         """
@@ -81,8 +82,7 @@ class Casa(ObjetoCena):
 
         # Paredes. O retângulo nasce centrado na origem; para "apoiá-lo" no chão,
         # o centro fica meia altura acima de Y_CHAO.
-        r.desenhar(self.parede, 1.0, (x, Y_CHAO + ALTURA_PAREDE / 2),
-                   PALETA_PAREDE[self.indice_cor][1])
+        r.desenhar(self.parede, 1.0, (x, Y_CHAO + ALTURA_PAREDE / 2), self.cor_parede)
 
         # Telhado: a mesma malha, duas primitivas.
         centro_telhado = (x, Y_CHAO + ALTURA_PAREDE + ALTURA_TELHADO / 2)

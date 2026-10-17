@@ -11,7 +11,6 @@ import numpy as np
 
 from config import Y_CHAO, Estacao
 from geometria import curva_flor
-from objetos.arvore import ALTURA_TRONCO
 from objetos.objeto_cena import ObjetoCena
 
 TAMANHO_FLOR = 0.026    # raio da flor, até a ponta das pétalas
@@ -55,9 +54,8 @@ class Flores(ObjetoCena):
             self.flores.append((x, y, CORES_GRAMA[i % len(CORES_GRAMA)]))
 
         # Na copa: as posições acompanham o lugar da árvore.
-        topo = Y_CHAO + ALTURA_TRONCO
         for dx, dy in FLORES_COPA:
-            self.flores.append((arvore.x + dx, topo + dy, COR_FLOR_COPA))
+            self.flores.append((arvore.x + dx, arvore.topo + dy, COR_FLOR_COPA))
 
     def desenhar(self, r, estado):
         """

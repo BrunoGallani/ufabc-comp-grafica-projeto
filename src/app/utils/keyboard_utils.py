@@ -34,9 +34,10 @@ class Key(IntEnum):
     P = glfw.KEY_P
     ESC = glfw.KEY_ESCAPE
 
-    @staticmethod
-    def setas() -> tuple['Key', 'Key', 'Key', 'Key']:
-        """
-        Retorna as teclas que representam as quatro setas do teclado.
-        """
-        return (Key.SETA_BAIXO, Key.SETA_CIMA, Key.SETA_DIREITA, Key.SETA_ESQUERDA)
+# Direção (dx, dy) de cada seta: para onde o Sr. Coração olha ou anda.
+SETAS = {
+    Key.SETA_CIMA: (0.0, 1.0),
+    Key.SETA_BAIXO: (0.0, -1.0),
+    Key.SETA_DIREITA: (1.0, 0.0),
+    Key.SETA_ESQUERDA: (-1.0, 0.0),
+}

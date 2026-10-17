@@ -13,6 +13,8 @@ o desenho e o `andar()`. Só três coisas mudam:
 
 Nada no `senhor_coracao.py` precisou mudar para esta classe existir.
 """
+import math
+
 import moderngl
 
 from geometria import laco
@@ -46,7 +48,7 @@ class SraCoracao(SenhorCoracao):
         """
         dx = self.alvo.posicao[0] - self.posicao[0]
         dy = self.alvo.posicao[1] - self.posicao[1]
-        distancia = (dx ** 2 + dy ** 2) ** 0.5
+        distancia = math.hypot(dx, dy)
         if distancia > 0.0:
             # (dx, dy) / distancia é um vetor de comprimento 1 que aponta para
             # o alvo. Multiplicado por LIMITE_OLHAR, leva a pupila até a borda
