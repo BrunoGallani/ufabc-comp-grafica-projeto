@@ -3,7 +3,8 @@ Geometrias da cena, só com numpy (nada aqui fala com a GPU).
 
 Todo vértice é (x, y, 0, 1) em float32, o formato do `vec4 vPosition` do shader;
 sem o dtype, o numpy usaria float64 e a GPU leria lixo. Tudo nasce centrado na
-origem: tamanho e posição vêm depois, pelos uniforms `u_escala` e `u_deslocamento`.
+origem: rotação, tamanho e posição vêm depois, pelos uniforms `u_angulo`,
+`u_escala` e `u_deslocamento`.
 """
 import numpy as np
 
@@ -64,16 +65,6 @@ def retangulo(largura, altura):
         [-mx,  my, 0.0, 1.0],
     ], dtype='f4')
     indices = np.array([0, 1, 2, 2, 3, 0], dtype='u4')   # u4 = GL_UNSIGNED_INT, o tipo do EBO
-    return vertices, indices
-
-
-def retangulo_girado(comprimento, espessura, angulo):
-    """O retângulo de cima girado de `angulo` radianos (um raio de calor do verão)."""
-    vertices, indices = retangulo(comprimento, espessura)
-    c, s = np.cos(angulo), np.sin(angulo)
-    x, y = vertices[:, 0].copy(), vertices[:, 1].copy()
-    vertices[:, 0] = c * x - s * y
-    vertices[:, 1] = s * x + c * y
     return vertices, indices
 
 

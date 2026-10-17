@@ -1,6 +1,7 @@
 """
 Raios de calor do verão: retângulos finos que nascem perto do sol, andam pra fora
-e somem; logo depois nasce outro no lugar.
+e somem; logo depois nasce outro no lugar. Os 12 são a mesma malha, girada no
+vertex shader pelo `u_angulo`.
 """
 import math
 
@@ -8,7 +9,7 @@ import moderngl
 import numpy as np
 
 from config import Estacao
-from geometria import retangulo_girado
+from geometria import retangulo
 from objetos.astros import CENTRO_ASTRO
 from objetos.objeto_cena import ObjetoCena
 
@@ -30,21 +31,21 @@ class RaiosVerao(ObjetoCena):
     """
 
     def __init__(self, r, semente=5):
+        v, i = retangulo(COMPRIMENTO, ESPESSURA)
+        self.malha = r.criar_malha(v, moderngl.TRIANGLES, indices=i)   # a mesma para os 12 raios
         gerador = np.random.default_rng(semente)
-        self.raios = []   # (malha, direção (cos, sen), ponto de partida)
+        self.raios = []   # (ângulo, direção (cos, sen), ponto de partida)
         for k in range(N_RAIOS):
             # meio passo a mais que os triângulos do sol: cai no vão entre eles
             angulo = 2.0 * math.pi * (k + 0.5) / N_RAIOS
-            v, i = retangulo_girado(COMPRIMENTO, ESPESSURA, angulo)
-            malha = r.criar_malha(v, moderngl.TRIANGLES, indices=i)
             direcao = (math.cos(angulo), math.sin(angulo))
-            self.raios.append((malha, direcao, float(gerador.uniform(0.0, PERCURSO))))
+            self.raios.append((angulo, direcao, float(gerador.uniform(0.0, PERCURSO))))
 
     def desenhar(self, r, estado):
         if estado.estacao != Estacao.VERAO or estado.noite or estado.chovendo:
             return
         cx, cy = CENTRO_ASTRO
-        for malha, (dx, dy), partida in self.raios:
+        for angulo, (dx, dy), partida in self.raios:
             percorrido = (partida + VELOCIDADE * estado.tempo) % PERCURSO
             fracao = percorrido / PERCURSO
             # sobe de 0 a 1, segura e desce a 0 no fim do percurso
@@ -54,4 +55,5 @@ class RaiosVerao(ObjetoCena):
             cor = tuple(c_ceu + (c_raio - c_ceu) * intensidade
                         for c_raio, c_ceu in zip(COR_RAIO, estado.cor_do_ceu))
             distancia = DISTANCIA_INICIAL + percorrido
-            r.desenhar(malha, intensidade, (cx + distancia * dx, cy + distancia * dy), cor)
+            centro = (cx + distancia * dx, cy + distancia * dy)
+            r.desenhar(self.malha, intensidade, centro, cor, angulo=angulo)

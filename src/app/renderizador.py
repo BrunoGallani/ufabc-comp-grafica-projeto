@@ -31,8 +31,8 @@ class Malha:
 class Renderizador:
     """
     Um único programa de shaders desenha a cena inteira: cada forma vai pra VRAM
-    uma vez só e é posicionada pelos uniforms (posição * u_escala + u_deslocamento,
-    cor * u_atenuacao).
+    uma vez só e é posicionada pelos uniforms (posição girada por u_angulo e depois
+    * u_escala + u_deslocamento, cor * u_atenuacao).
     """
 
     def __init__(self, ctx: moderngl.Context) -> None:
@@ -89,9 +89,15 @@ class Renderizador:
         self.ajustar('u_atenuacao', atenuacao)
 
     def desenhar(self, malha: Malha, escala: float, deslocamento: tuple[float, float],
-                 cor: tuple[float, float, float, float], primitiva: int | None = None) -> None:
-        """Escreve os uniforms e desenha. `primitiva`, se vier, troca a da malha."""
+                 cor: tuple[float, float, float, float], primitiva: int | None = None,
+                 angulo: float = 0.0) -> None:
+        """
+        Escreve os uniforms e desenha. `primitiva`, se vier, troca a da malha. O
+        `angulo` (radianos) vai sempre, mesmo 0: o uniform guarda o último valor, e
+        senão a rotação de um raio passaria pros desenhos seguintes.
+        """
         self.ajustar('u_escala', escala)
+        self.ajustar('u_angulo', angulo)
         self.ajustar('u_deslocamento', deslocamento)
         self.ajustar('u_cor', cor)
         malha.vao.render(primitiva if primitiva is not None else malha.primitiva)
