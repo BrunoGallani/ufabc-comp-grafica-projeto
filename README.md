@@ -62,8 +62,8 @@ src/app/
 ├── cena.py            Cena (objetos, teclado, estado global) e EstadoCena
 ├── renderizador.py    Renderizador e Malha: programa de shaders, VBO/VAO/EBO, uniforms
 ├── geometria.py       funções numpy que geram os vértices de cada forma
-├── config.py          constantes globais (janela, chão, cores do céu, atenuação)
+├── config.py          constantes globais (título e tamanho da janela, chão, cores do céu, atenuação)
 ├── objetos/           uma classe por elemento da cena (herdam de ObjetoCena)
-├── shaders/           main_vertex_shader.vert e main_frag_shader.frag
+├── shaders/           cena.vert e cena.frag
 └── utils/             funções auxiliares (logs, teclado, shaders, tela cheia, capturas)
 ```

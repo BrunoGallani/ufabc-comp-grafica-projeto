@@ -1,17 +1,19 @@
 """
 Constantes globais. As cores de cada objeto ficam no arquivo dele.
 
-Tudo é em NDC: de -1 a 1 nos dois eixos, com (0, 0) no centro da janela.
+Fora o tamanho da janela (em pixels), tudo é em NDC: de -1 a 1 nos dois eixos,
+com (0, 0) no centro da cena.
 """
 from enum import Enum
 from pathlib import Path
 
-# Quadrada de propósito: numa janela retangular os círculos viram elipses.
+# Tamanho inicial: quadrada como a cena, pra não sobrar faixa nas bordas.
 LARGURA_JANELA = 720
 ALTURA_JANELA = 720
 TITULO_JANELA = "Cena 2D: Sr. e Sra. Coração e seus amigos"
 
-# Na tela cheia a cena continua quadrada; as sobras dos lados ficam com essa cor.
+# A cena fica sempre quadrada, mesmo em tela cheia ou com a janela redimensionada;
+# as sobras ficam com essa cor.
 COR_FAIXAS = (0.0, 0.0, 0.0, 1.0)
 
 Y_CHAO = -0.70   # topo da grama: onde a casa, a árvore e os corações pisam

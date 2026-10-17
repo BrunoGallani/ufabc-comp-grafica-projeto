@@ -30,14 +30,18 @@ COR_CAIXILHO = (0.30, 0.18, 0.10, 1.0)
 LARGURA_PAREDE, ALTURA_PAREDE = 0.50, 0.40
 BASE_TELHADO, ALTURA_TELHADO = 0.62, 0.28
 LARGURA_PORTA, ALTURA_PORTA = 0.12, 0.18
+RAIO_MACANETA = 0.012
+AFASTAMENTO_MACANETA = 0.035   # distância horizontal da maçaneta ao centro da porta
 LADO_JANELA = 0.11
-AFASTAMENTO_JANELA = 0.15   # do centro da casa até cada janela
-ALTURA_JANELA = 0.27        # do chão até o centro das janelas
+AFASTAMENTO_JANELA = 0.15      # do centro da casa até cada janela
+ALTURA_CENTRO_JANELA = 0.27    # do chão até o centro das janelas
 
 
 class Casa(ObjetoCena):
-    def __init__(self, r, centro_x=-0.58):
-        self.x = centro_x
+    """Casa apoiada no chão, centrada em `x`."""
+
+    def __init__(self, r, x=-0.58):
+        self.x = x
         self.paleta = itertools.cycle(PALETA_PAREDE)   # depois da última cor, volta pra primeira
         self.nome_cor, self.cor_parede = next(self.paleta)
         self.circulo = r.circulo
@@ -70,10 +74,11 @@ class Casa(ObjetoCena):
         # Porta com um círculo em cima: a metade de baixo some na porta, que é da mesma cor.
         r.desenhar(self.porta, 1.0, (x, Y_CHAO + ALTURA_PORTA / 2), COR_PORTA)
         r.desenhar(self.circulo, LARGURA_PORTA / 2, (x, Y_CHAO + ALTURA_PORTA), COR_PORTA)
-        r.desenhar(self.circulo, 0.012, (x + 0.035, Y_CHAO + ALTURA_PORTA / 2), COR_MACANETA)
+        macaneta = (x + AFASTAMENTO_MACANETA, Y_CHAO + ALTURA_PORTA / 2)
+        r.desenhar(self.circulo, RAIO_MACANETA, macaneta, COR_MACANETA)
 
         for lado in (-1.0, 1.0):
-            centro = (x + lado * AFASTAMENTO_JANELA, Y_CHAO + ALTURA_JANELA)
+            centro = (x + lado * AFASTAMENTO_JANELA, Y_CHAO + ALTURA_CENTRO_JANELA)
             if estado.noite:   # luz acesa: a noite não escurece a janela
                 r.desenhar_emissivo(self.janela, 1.0, centro, COR_VIDRO_NOITE)
             else:

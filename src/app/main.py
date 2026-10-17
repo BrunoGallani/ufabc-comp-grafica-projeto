@@ -61,11 +61,11 @@ def run_app(ctx: moderngl.Context, window: 'glfw._GLFWwindowPointerT') -> None:
 
     cena.liberar()
     glfw.terminate()
-    Log.d("Execução finalizada.")
+    Log.d("Execução finalizada")
 
 def main() -> None:
-    Log.d("Esta cena é interativa!"
-          "\nAperte a tecla 'K' para visualizar o tutorial no terminal.")
+    Log.d("Cena interativa iniciada")
+    Log.d("Aperte a tecla 'K' para visualizar o tutorial no terminal")
     run_app(*setup_glfw())
 
 if __name__ == "__main__":

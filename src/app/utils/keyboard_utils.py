@@ -1,3 +1,6 @@
+"""
+Teclas usadas pela cena e o texto de ajuda exibido pela tecla K.
+"""
 from enum import IntEnum
 import glfw
 

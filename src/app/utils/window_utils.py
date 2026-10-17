@@ -1,3 +1,6 @@
+"""
+Tela cheia (tecla F).
+"""
 import glfw
 
 from config import ALTURA_JANELA, LARGURA_JANELA

@@ -1,3 +1,6 @@
+"""
+Registro de mensagens e erros no terminal, com data e hora de Brasília.
+"""
 import sys
 from datetime import datetime, timedelta, timezone
 

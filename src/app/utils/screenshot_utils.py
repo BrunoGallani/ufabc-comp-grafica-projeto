@@ -1,3 +1,6 @@
+"""
+Captura de tela da cena (tecla P).
+"""
 from datetime import datetime
 from typing import TYPE_CHECKING
 from config import PASTA_CAPTURAS

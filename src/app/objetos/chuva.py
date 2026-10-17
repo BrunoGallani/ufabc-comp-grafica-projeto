@@ -15,7 +15,7 @@ N_GOTAS_VERAO = 200           # chuva de verão é mais forte
 ESCALA_GOTA = 0.02
 VELOCIDADE_QUEDA = 0.8        # NDC por segundo
 COR_GOTA = (0.35, 0.55, 1.00, 1.0)
-TOPO = 1.0                    # borda de cima da janela
+TOPO = 1.0                    # borda de cima da cena
 
 
 class Chuva(ObjetoCena):

@@ -18,8 +18,8 @@ ESPESSURA = 0.012
 DISTANCIA_INICIAL = 0.24    # do centro do sol até onde o raio nasce (depois das pontas)
 PERCURSO = 0.12             # quanto ele anda antes de sumir
 VELOCIDADE = 0.10           # NDC por segundo
-SURGIR = 0.2                # pedaço do começo do percurso em que o raio cresce
-SUMIR = 0.4                 # pedaço do fim em que ele encolhe e desbota
+FRACAO_SURGIR = 0.2         # pedaço do começo do percurso em que o raio cresce
+FRACAO_SUMIR = 0.4          # pedaço do fim em que ele encolhe e desbota
 COR_RAIO = (1.00, 0.72, 0.25, 1.0)
 
 
@@ -48,7 +48,7 @@ class RaiosVerao(ObjetoCena):
             percorrido = (partida + VELOCIDADE * estado.tempo) % PERCURSO
             fracao = percorrido / PERCURSO
             # sobe de 0 a 1, segura e desce a 0 no fim do percurso
-            intensidade = min(1.0, fracao / SURGIR, (1.0 - fracao) / SUMIR)
+            intensidade = min(1.0, fracao / FRACAO_SURGIR, (1.0 - fracao) / FRACAO_SUMIR)
             # Some misturando a cor com a do céu (dá certo porque de dia, sem chuva,
             # o u_atenuacao é 1).
             cor = tuple(c_ceu + (c_raio - c_ceu) * intensidade

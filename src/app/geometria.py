@@ -147,6 +147,10 @@ def laco(abertura=0.55):
     return vertices, indices
 
 
+# ---------------------------------------------------------------------------
+# Texto do painel de informações.
+# ---------------------------------------------------------------------------
+
 def bitmap(mascara):
     """
     Imagem preto e branco (array booleano, linha 0 em cima) virando retângulos com

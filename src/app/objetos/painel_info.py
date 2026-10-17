@@ -37,7 +37,7 @@ class PainelInfo(ObjetoCena):
         self.centro = (0.0, 0.0)
 
     def desenhar(self, r, estado):
-        if not estado.painel:
+        if not estado.painel_visivel:
             return
         pares = self.informacoes()
         # A fonte é monoespaçada: completando os rótulos com espaço, os valores alinham.
