@@ -1,3 +1,6 @@
+"""
+Teclas usadas pela cena e o texto de ajuda exibido pela tecla K.
+"""
 from enum import IntEnum
 import glfw
 
@@ -16,9 +19,7 @@ P ................ salva uma captura de tela em capturas/
 ESC .............. encerra o programa"""
 
 class Key(IntEnum):
-    """
-    Mapeia as teclas para constantes.
-    """
+    """As teclas que a cena usa."""
     SETA_CIMA = glfw.KEY_UP
     SETA_BAIXO = glfw.KEY_DOWN
     SETA_DIREITA = glfw.KEY_RIGHT
@@ -34,9 +35,10 @@ class Key(IntEnum):
     P = glfw.KEY_P
     ESC = glfw.KEY_ESCAPE
 
-    @staticmethod
-    def setas() -> tuple['Key', 'Key', 'Key', 'Key']:
-        """
-        Retorna as teclas que representam as quatro setas do teclado.
-        """
-        return (Key.SETA_BAIXO, Key.SETA_CIMA, Key.SETA_DIREITA, Key.SETA_ESQUERDA)
+# (dx, dy) de cada seta: pra onde o Sr. Coração olha ou anda
+SETAS = {
+    Key.SETA_CIMA: (0.0, 1.0),
+    Key.SETA_BAIXO: (0.0, -1.0),
+    Key.SETA_DIREITA: (1.0, 0.0),
+    Key.SETA_ESQUERDA: (-1.0, 0.0),
+}

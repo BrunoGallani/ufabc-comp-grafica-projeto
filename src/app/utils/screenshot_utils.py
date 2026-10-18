@@ -1,3 +1,6 @@
+"""
+Captura de tela da cena (tecla P).
+"""
 from datetime import datetime
 from typing import TYPE_CHECKING
 from config import PASTA_CAPTURAS
@@ -9,22 +12,16 @@ if TYPE_CHECKING:
 
 def save_screenshot(cena: 'Cena') -> None:
     """
-    Salva como PNG a cena desenhada na tela.
-
-    Deve ser chamada **depois** de desenhar e **antes** de `glfw.swap_buffers`: nesse
-    momento a imagem completa está no *backbuffer*. O nome do arquivo indica o estado
-    da cena (dia ou noite, com ou sem chuva) e o instante da captura.
-
-    Só o quadrado da cena (o viewport) é salvo: em tela cheia, as faixas laterais
-    ficam de fora. O `ctx.fbo.size` não serviria, pois o moderngl o grava uma
-    única vez, ao criar o contexto, e ele não acompanha a tela cheia.
+    Salva o quadro em PNG. Tem que rodar depois de desenhar e antes do swap_buffers,
+    quando o quadro inteiro está no backbuffer.
     """
-    viewport = cena.ctx.viewport                   # (x, y, largura, altura) em pixels
+    # Só o quadrado da cena (o viewport), sem as faixas da tela cheia. O ctx.fbo.size
+    # não serve: o moderngl grava ele uma vez só e ele não acompanha a tela cheia.
+    viewport = cena.ctx.viewport
     width, height = viewport[2], viewport[3]
-    pixels = cena.ctx.fbo.read(viewport=viewport, components=3)   # bytes RGB, linha a linha
+    pixels = cena.ctx.fbo.read(viewport=viewport, components=3)
     image = Image.frombytes("RGB", (width, height), pixels)
-    # OpenGL guarda a imagem de baixo para cima
-    # Arquivos de imagem guardam de cima para baixo
+    # O OpenGL guarda a imagem de baixo pra cima; o PNG, de cima pra baixo.
     image = ImageOps.flip(image)
 
     prefix = ("noite" if cena.estado.noite else "dia") + ("_chuva" if cena.estado.chovendo else "")

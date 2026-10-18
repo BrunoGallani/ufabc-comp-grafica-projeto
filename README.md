@@ -1,6 +1,6 @@
 # Cena 2D: Sr. Coração e seus amigos
 
-Trabalho prático de Computação Gráfica (MCCC007-23, UFABC): uma cena 2D interativa em Python, com OpenGL 4.0 Core (`glfw`, `moderngl` e `numpy`). Ela expande o exemplo do **Sr. Coração**.
+Trabalho prático de Computação Gráfica (MCCC007-23, UFABC): uma cena 2D interativa em Python, com OpenGL 4.0 Core (`glfw`, `moderngl`, `numpy` e `pillow`). Ela expande o exemplo do **Sr. Coração**.
 
 A cena tem:
 
@@ -12,6 +12,12 @@ A cena tem:
 - um painel com o estado da cena (horário, chuva, estação, cor da casa, tela cheia), num retângulo cinza translúcido.
 
 Tudo é desenhado com um único par de shaders (`src/app/shaders/`), reaproveitando poucas geometrias. Até o texto do painel: o Pillow escreve as letras numa imagem em preto e branco, e cada pixel aceso vira um retângulo.
+
+## Requisitos
+
+- Python 3.11;
+- Dependências descritas no arquivo `requirements.txt`;
+- Placa de vídeo com suporte a OpenGL 4.0.
 
 ## Como rodar
 
@@ -56,8 +62,8 @@ src/app/
 ├── cena.py            Cena (objetos, teclado, estado global) e EstadoCena
 ├── renderizador.py    Renderizador e Malha: programa de shaders, VBO/VAO/EBO, uniforms
 ├── geometria.py       funções numpy que geram os vértices de cada forma
-├── config.py          constantes globais (janela, chão, cores do céu, atenuação)
+├── config.py          constantes globais (título e tamanho da janela, chão, cores do céu, atenuação)
 ├── objetos/           uma classe por elemento da cena (herdam de ObjetoCena)
-├── shaders/           main_vertex_shader.vert e main_frag_shader.frag
-└── utils/             funções auxiliares (logs, teclado, data, título, shaders, capturas)
+├── shaders/           cena.vert e cena.frag
+└── utils/             funções auxiliares (logs, teclado, shaders, tela cheia, capturas)
 ```

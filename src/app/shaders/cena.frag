@@ -5,5 +5,5 @@ uniform float u_atenuacao;
 out vec4 outfragcolor;
 
 void main() {
-    outfragcolor = vec4(v2fcolor.rgb * u_atenuacao, v2fcolor.a);    
+    outfragcolor = vec4(v2fcolor.rgb * u_atenuacao, v2fcolor.a);
 }

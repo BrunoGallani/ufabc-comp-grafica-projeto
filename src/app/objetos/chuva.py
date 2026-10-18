@@ -1,12 +1,6 @@
 """
-Chuva: muitas cópias de uma única malha, a gota.
-
-É o reaproveitamento de geometria levado ao extremo. A gota (uma elipse alta
-e fina) vai para a VRAM uma única vez e é desenhada `N_GOTAS` vezes por quadro,
-cada vez com um `u_deslocamento` diferente. Cada gota é só um par `[x, y]`
-guardado na CPU, numa lista.
-
-Tecla R: liga/desliga a chuva (o `estado.chovendo`, controlado pela :class:`Cena`).
+Chuva: uma malha só (a gota) desenhada N_GOTAS vezes por quadro, ou N_GOTAS_VERAO
+no verão, cada vez com um u_deslocamento. Cada gota é só um [x, y] na CPU.
 """
 import random
 
@@ -16,64 +10,35 @@ from config import Y_CHAO, Estacao
 from geometria import curva_elipse
 from objetos.objeto_cena import ObjetoCena
 
-ESCALA_GOTA = 0.02            # tamanho de cada gota na tela
-VELOCIDADE_QUEDA = 0.8        # em NDC por segundo
+N_GOTAS = 80
+N_GOTAS_VERAO = 200           # chuva de verão é mais forte
+ESCALA_GOTA = 0.02
+VELOCIDADE_QUEDA = 0.8        # NDC por segundo
 COR_GOTA = (0.35, 0.55, 1.00, 1.0)
-TOPO = 1.0                    # y da borda de cima da janela
+TOPO = 1.0                    # borda de cima da cena
 
 
 class Chuva(ObjetoCena):
-    """
-    Gotas que caem com velocidade constante e voltam ao topo ao atingir o chão.
-    """
-
-    def __init__(self, r, estado):
-        # Elipse 0.35 x 1.0: bem mais alta do que larga. Como u_escala é igual
-        # nos dois eixos, essa proporção precisa estar nos próprios vértices.
+    def __init__(self, r):
         self.gota = r.criar_malha(curva_elipse(0.35, 1.0), moderngl.TRIANGLE_FAN)
-        
-        # Cada gota começa num ponto aleatório entre o chão e o topo: [x, y].
-        n_gotas = self.__calcular_numero_gotas_chuva(estado)
+
+        # Começam espalhadas entre o chão e o topo. Todas caem, mas fora do verão
+        # só as N_GOTAS primeiras aparecem.
         self.gotas = [[random.uniform(-1.0, 1.0), random.uniform(Y_CHAO, TOPO)]
-                      for _ in range(n_gotas)]
+                      for _ in range(N_GOTAS_VERAO)]
 
     def atualizar(self, dt, estado):
-        """
-        Faz cada gota descer `VELOCIDADE_QUEDA * dt`; a gota que passa do chão
-        volta ao topo, numa posição horizontal sorteada.
-        """
         if not estado.chovendo:
             return
-        
-        n_gotas_esperado = self.__calcular_numero_gotas_chuva(estado)
-        atual = len(self.gotas)
-        
-        if atual < n_gotas_esperado:
-            self.gotas.extend([[random.uniform(-1.0, 1.0), random.uniform(Y_CHAO, TOPO)] for _ in range(n_gotas_esperado - atual)])
-        else:
-            self.gotas = self.gotas[:n_gotas_esperado]
-            
-        self.gotas = [
-                    [x, y - (VELOCIDADE_QUEDA * dt)] if y > Y_CHAO else
-                    [random.uniform(-1.0, 1.0), TOPO]
-                    for x, y in self.gotas]
+        for gota in self.gotas:
+            if gota[1] > Y_CHAO:
+                gota[1] -= VELOCIDADE_QUEDA * dt
+            else:   # chegou no chão: volta pro topo num x sorteado
+                gota[0], gota[1] = random.uniform(-1.0, 1.0), TOPO
 
     def desenhar(self, r, estado):
-        """
-        Desenha todas as gotas com a mesma malha, só mudando o deslocamento.
-        """
         if not estado.chovendo:
             return
-        for x, y in self.gotas:
+        n_gotas = N_GOTAS_VERAO if estado.estacao == Estacao.VERAO else N_GOTAS
+        for x, y in self.gotas[:n_gotas]:
             r.desenhar(self.gota, ESCALA_GOTA, (x, y), COR_GOTA)
-
-    def __calcular_numero_gotas_chuva(self, estado) -> int:
-        """
-        Retorna o número de gotas que será usado para renderizar a chuva.
-        
-        O valor padrão é 80. No verão, a chuva é mais intensa, e usa um valor
-        2,5 (definido arbitrariamente) vezes maior de gotas.
-        """
-        if estado.estacao == Estacao.VERAO:
-            return 200
-        return 80
